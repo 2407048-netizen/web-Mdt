@@ -1,0 +1,213 @@
+{% extends "base.html" %}
+{% block title %}{{ 'Edit' if schedule else 'Tambah' }} Jadwal - MDT Miftahul Hidayah{% endblock %}
+{% block header_title %}{{ 'Edit' if schedule else 'Tambah' }} Jadwal Mengajar{% endblock %}
+
+{% block content %}
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="p-6 border-b border-slate-100 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white">
+            <h3 class="font-bold text-lg">
+                {{ 'Edit' if schedule else 'Buat' }} Jadwal Mengajar
+            </h3>
+            <p class="text-indigo-200 text-sm mt-1">Tentukan guru, kelas, mata pelajaran, dan waktu mengajarnya.</p>
+        </div>
+
+        <form method="POST" class="p-6 space-y-5">
+            <!-- Guru -->
+            <div class="space-y-1.5">
+                <label class="block text-sm font-semibold text-slate-700">
+                    Guru / Ustadz yang Bertugas <span class="text-red-500">*</span>
+                </label>
+                <select name="teacher_id" required
+                        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 bg-white">
+                    <option value="">-- Pilih Guru --</option>
+                    {% for teacher in teachers %}
+                    <option value="{{ teacher.id }}"
+                        {{ 'selected' if schedule and schedule.teacher_id == teacher.id }}>
+                        {{ teacher.username }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Mata Pelajaran -->
+            <div class="space-y-1.5">
+                <label class="block text-sm font-semibold text-slate-700">
+                    Mata Pelajaran / Kitab <span class="text-red-500">*</span>
+                </label>
+                <select name="subject_id" required
+                        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 bg-white">
+                    <option value="">-- Pilih Mata Pelajaran --</option>
+                    {% for subj in subjects %}
+                    <option value="{{ subj.id }}"
+                        {{ 'selected' if schedule and schedule.subject_id == subj.id }}>
+                        {{ subj.name }}
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Jadwal & Hari -->
+            <div class="space-y-4">
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-slate-700">
+                        Jadwal <span class="text-red-500">*</span>
+                    </label>
+                    <select name="prayer_session" id="prayer_session" required onchange="updateClassrooms()" onfocus="updateClassrooms()"
+                            class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 bg-white">
+                        <option value="">-- Pilih Jadwal --</option>
+                        {% for session in prayer_sessions %}
+                        <option value="{{ session }}"
+                            {{ 'selected' if schedule and schedule.prayer_session == session }}>
+                            {{ session }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+
+                <div class="space-y-2">
+                    <div class="flex justify-between items-center">
+                        <label class="block text-sm font-semibold text-slate-700">
+                            Hari Mengajar <span class="text-red-500">*</span>
+                        </label>
+                        <button type="button" onclick="selectAllDays()" class="text-xs font-semibold text-indigo-600 hover:text-indigo-800 transition-colors">
+                            Pilih Semua Hari
+                        </button>
+                    </div>
+                    <div class="grid grid-cols-4 sm:grid-cols-7 gap-2">
+                        {% for num, name in day_names.items() %}
+                        <label class="cursor-pointer select-none">
+                            <input type="checkbox" name="days_of_week" value="{{ num }}" class="sr-only peer"
+                                   {% if schedule and schedule.day_of_week == num %}checked{% endif %}>
+                            <div class="flex items-center justify-center py-2.5 rounded-xl border border-slate-200 bg-white text-xs font-semibold text-slate-600 transition-all duration-200 hover:border-slate-400 peer-checked:border-indigo-600 peer-checked:bg-indigo-50 peer-checked:text-indigo-700">
+                                {{ name }}
+                            </div>
+                        </label>
+                        {% endfor %}
+                    </div>
+                    <p class="text-xs text-slate-500">Anda dapat memilih lebih dari satu hari (bisa pilih semua hari jika guru mengajar setiap hari).</p>
+                </div>
+            </div>
+
+            <!-- Kelas (Bawah) -->
+            <div class="space-y-1.5">
+                <label class="block text-sm font-semibold text-slate-700">
+                    Kelas <span class="text-red-500">*</span>
+                </label>
+                <select name="classroom_id" id="classroom_id" required onfocus="updateClassrooms()"
+                        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 bg-white">
+                    <option value="">-- Pilih Kelas --</option>
+                    {% for cls in classrooms %}
+                    <option value="{{ cls.id }}"
+                        {{ 'selected' if schedule and schedule.classroom_id == cls.id }}>
+                        Kelas {{ cls.name }} (Level {{ cls.level }})
+                    </option>
+                    {% endfor %}
+                </select>
+            </div>
+
+            <!-- Info Aturan Libur -->
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+                <p class="font-semibold mb-2">Aturan Hari Libur MDT:</p>
+                <ul class="space-y-1 text-xs">
+                    <li>• <strong>Subuh</strong>: LIBUR hari Jum'at</li>
+                    <li>• <strong>Dzuhur & Ashar</strong>: LIBUR hari Sabtu</li>
+                    <li>• <strong>Magrib</strong>: LIBUR hari Selasa • Jum'at = Tawasulan (khusus)</li>
+                </ul>
+            </div>
+
+            <!-- Tombol -->
+            <div class="flex gap-3 pt-2">
+                <a href="{{ url_for('admin.schedules') }}"
+                   class="flex-1 text-center px-5 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors">
+                    Batal
+                </a>
+                <button type="submit"
+                        class="flex-1 px-5 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors shadow-sm">
+                    {{ 'Simpan Perubahan' if schedule else 'Tambahkan Jadwal' }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    function updateClassrooms() {
+        const sessionSelect = document.getElementById('prayer_session');
+        const classSelect = document.getElementById('classroom_id');
+        
+        if (!sessionSelect || !classSelect) return;
+        
+        const selectedSession = sessionSelect.value;
+        const sessionClassrooms = {{ session_classrooms | tojson | safe }};
+        const currentSelected = classSelect.value || "{{ schedule.classroom_id if schedule else '' }}";
+
+        // Bersihkan pilihan kelas
+        classSelect.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+        
+        // Kumpulkan SEMUA kelas dari semua session ke dalam satu array flat
+        const allClassrooms = [];
+        Object.keys(sessionClassrooms).forEach(function(k) {
+            if (sessionClassrooms[k]) {
+                sessionClassrooms[k].forEach(function(c) {
+                    allClassrooms.push(c);
+                });
+            }
+        });
+
+        const classList = (selectedSession && sessionClassrooms[selectedSession])
+            ? sessionClassrooms[selectedSession]
+            : allClassrooms;
+
+        let matched = false;
+        classList.forEach(function(cls) {
+            const opt = document.createElement('option');
+            opt.value = cls.id;
+            opt.textContent = cls.name;
+            if (String(cls.id) === String(currentSelected)) {
+                opt.selected = true;
+                matched = true;
+            }
+            classSelect.appendChild(opt);
+        });
+
+        // Jika ada sesi yang terpilih tapi kelas saat ini tidak cocok, setel ulang ke kosong
+        if (selectedSession && !matched) {
+            classSelect.value = "";
+        }
+    }
+
+    // Daftarkan listener secara kuat menggunakan DOM events
+    document.addEventListener('DOMContentLoaded', function() {
+        const sessionSelect = document.getElementById('prayer_session');
+        const classSelect = document.getElementById('classroom_id');
+        
+        if (sessionSelect) {
+            sessionSelect.addEventListener('change', updateClassrooms);
+            sessionSelect.addEventListener('focus', updateClassrooms);
+        }
+        if (classSelect) {
+            classSelect.addEventListener('focus', updateClassrooms);
+        }
+        
+        updateClassrooms();
+        
+        // Pemicu tambahan untuk menjamin rendering awal
+        setTimeout(updateClassrooms, 50);
+        setTimeout(updateClassrooms, 200);
+        setTimeout(updateClassrooms, 500);
+        setTimeout(updateClassrooms, 1000);
+    });
+
+    // Tangani kembali ke halaman dari cache (back-forward cache)
+    window.addEventListener('pageshow', updateClassrooms);
+
+    function selectAllDays() {
+        const checkboxes = document.querySelectorAll('input[name="days_of_week"]');
+        const allChecked = Array.from(checkboxes).every(cb => cb.checked);
+        checkboxes.forEach(cb => {
+            cb.checked = !allChecked;
+        });
+    }
+</script>
+{% endblock %}

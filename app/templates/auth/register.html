@@ -1,0 +1,575 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Daftar Akun Guru - MDT Miftahul Hidayah</title>
+    <meta name="description" content="Pendaftaran akun Guru / Ustadz MDT Miftahul Hidayah">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap"
+        rel="stylesheet">
+    <style>
+        body {
+            font-family: 'Inter', sans-serif;
+        }
+
+        .bg-main {
+            background: radial-gradient(ellipse at 20% 30%, rgba(245, 158, 11, 0.15) 0%, transparent 55%),
+                radial-gradient(ellipse at 80% 70%, rgba(16, 185, 129, 0.12) 0%, transparent 50%),
+                #0a1628;
+        }
+
+        .glass {
+            background: rgba(255, 255, 255, 0.04);
+            backdrop-filter: blur(20px);
+            border: 1px solid rgba(255, 255, 255, 0.08);
+        }
+
+        .input-field {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            color: white;
+            transition: border-color 0.2s, box-shadow 0.2s;
+        }
+
+        .input-field:focus {
+            outline: none;
+            border-color: #f59e0b;
+            box-shadow: 0 0 0 3px rgba(245, 158, 11, 0.15);
+        }
+
+        .input-field::placeholder {
+            color: rgba(255, 255, 255, 0.3);
+        }
+    </style>
+</head>
+
+<body class="bg-main min-h-screen flex items-center justify-center p-4">
+
+    <div class="w-full max-w-md">
+
+        <!-- Back -->
+        <a href="{{ url_for('auth.login') }}"
+            class="flex items-center gap-2 text-slate-400 hover:text-white text-sm font-medium mb-8 transition-colors w-fit">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 19l-7-7 7-7" />
+            </svg>
+            Kembali ke Pilihan Login
+        </a>
+
+        <!-- Card -->
+        <div class="glass rounded-3xl p-8 shadow-2xl">
+
+            <!-- Header -->
+            <div class="flex items-center gap-4 mb-8">
+                <div
+                    class="w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center flex-shrink-0">
+                    <svg class="h-7 w-7 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                            d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z" />
+                    </svg>
+                </div>
+                <div>
+                    <h1 class="text-xl font-bold text-white">Daftar Akun Guru</h1>
+                    <p class="text-amber-400/80 text-sm font-medium">MDT Miftahul Hidayah</p>
+                </div>
+            </div>
+
+            <!-- Flash -->
+            {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+            {% for category, message in messages %}
+            <div class="px-4 py-3 rounded-xl mb-5 text-sm flex items-start gap-2
+                    {% if category == 'error' %}bg-red-500/15 border border-red-500/30 text-red-300
+                    {% else %}bg-emerald-500/15 border border-emerald-500/30 text-emerald-300{% endif %}">
+                <svg class="h-4 w-4 mt-0.5 flex-shrink-0" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    {% if category == 'error' %}
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M12 9v2m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    {% else %}
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+                    {% endif %}
+                </svg>
+                {{ message }}
+            </div>
+            {% endfor %}
+            {% endif %}
+            {% endwith %}
+
+            <form method="POST" action="{{ url_for('auth.register') }}" class="space-y-5" id="registerForm">
+
+                <!-- Email Google (Gmail) - Tahap 1 -->
+                <div class="space-y-1.5">
+                    <label class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Email Google
+                        (Gmail)</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4">
+                            <svg class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M16 12a4 4 0 10-8 0 4 4 0 008 0zm0 0v1.5a2.5 2.5 0 005 0V12a9 9 0 10-9 9m4.5-1.206a8.959 8.959 0 01-4.5 1.207" />
+                            </svg>
+                        </div>
+                        <input type="email" name="email" id="email" required autocomplete="email"
+                            placeholder="nama.anda@gmail.com"
+                            class="input-field w-full rounded-xl pl-11 pr-28 py-3 text-sm">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-2">
+                            <button type="button" id="btn-send-otp" onclick="requestOTP()"
+                                class="px-3 py-1.5 bg-amber-600 hover:bg-amber-500 text-white text-[11px] font-bold rounded-lg transition-colors">
+                                Kirim OTP
+                            </button>
+                        </div>
+                    </div>
+                    <p class="text-[10px] text-slate-500 flex justify-between" id="email-hint">
+                        <span>Pendaftaran wajib menggunakan akun Google yang aktif (@gmail.com).</span>
+                    </p>
+                </div>
+
+                <!-- OTP Input (Hidden Initially) -->
+                <div id="otp-container" class="space-y-1.5" style="display: none;">
+                    <label class="text-xs font-semibold text-amber-400 uppercase tracking-wide">Kode Verifikasi
+                        OTP</label>
+                    <div class="relative">
+                        <div class="absolute inset-y-0 left-0 flex items-center pl-4">
+                            <svg class="h-4 w-4 text-amber-500" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <input type="text" id="otp_code" placeholder="Masukkan 6 digit OTP" maxlength="6"
+                            class="input-field w-full border-amber-500/50 focus:border-amber-500 focus:ring-amber-500/20 rounded-xl pl-11 pr-28 py-3 text-sm bg-slate-900 text-amber-200">
+                        <div class="absolute inset-y-0 right-0 flex items-center pr-2">
+                            <button type="button" id="btn-verify-otp" onclick="verifyOTP()"
+                                class="px-3 py-1.5 bg-amber-500 hover:bg-amber-400 text-slate-950 text-[11px] font-extrabold rounded-lg transition-colors">
+                                Verifikasi
+                            </button>
+                        </div>
+                    </div>
+                    <div class="text-[10px] text-slate-400 flex justify-between">
+                        <span>Masukkan kode 6 digit dari email Anda.</span>
+                        <span id="countdown-timer" class="font-semibold text-amber-400">Sisa waktu: 05:00</span>
+                    </div>
+                </div>
+
+                <!-- Tahap 2: Sisa Form yang Terkunci Hingga OTP Terverifikasi -->
+                <div id="registration-fields" style="display: none;" class="space-y-5">
+                    <!-- Nama Lengkap -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Nama Lengkap</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-4">
+                                <svg class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+                                </svg>
+                            </div>
+                            <input type="text" name="username" required placeholder="Ustadz / Ustadzah ..."
+                                class="input-field w-full rounded-xl pl-11 pr-4 py-3 text-sm">
+                        </div>
+                    </div>
+
+                    <!-- Jadwal & Kelas (2 kolom) -->
+                    <div class="grid grid-cols-2 gap-4">
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Jadwal
+                                Mengajar</label>
+                            <select name="prayer_session" id="prayer_session" required onchange="updateClassrooms()"
+                                onfocus="updateClassrooms()"
+                                class="input-field w-full rounded-xl px-4 py-3 text-sm bg-[#162235] cursor-pointer">
+                                <option value="">-- Pilih Jadwal --</option>
+                                {% for session in prayer_sessions %}
+                                <option value="{{ session }}">{{ session }}</option>
+                                {% endfor %}
+                            </select>
+                        </div>
+
+                        <div class="space-y-1.5">
+                            <label class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Kelas</label>
+                            <!-- DIKOSONGKAN: diisi 100% via JavaScript -->
+                            <select name="classroom_id" id="classroom_id" required
+                                class="input-field w-full rounded-xl px-4 py-3 text-sm bg-[#162235] cursor-pointer">
+                                <option value="">-- Pilih Kelas --</option>
+                            </select>
+                        </div>
+                    </div>
+
+                    <!-- Hari Mengajar (Multi-select pill) -->
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-400 uppercase tracking-wide block mb-1">Hari
+                            Mengajar</label>
+                        <div class="grid grid-cols-4 gap-2">
+                            {% for day_idx, day_name in day_names.items() %}
+                            <label class="cursor-pointer select-none">
+                                <input type="checkbox" name="teaching_days" value="{{ day_idx }}" class="sr-only peer">
+                                <div
+                                    class="flex items-center justify-center p-2 rounded-xl border border-slate-700 bg-slate-800/30 text-xs font-semibold text-slate-300 transition-all duration-200 hover:border-slate-500 peer-checked:border-amber-500 peer-checked:bg-amber-500/10 peer-checked:text-amber-400">
+                                    {{ day_name }}
+                                </div>
+                            </label>
+                            {% endfor %}
+                        </div>
+                    </div>
+
+                    <!-- Pelajaran / Kitab -->
+                    <div class="space-y-2">
+                        <label class="text-xs font-semibold text-slate-400 uppercase tracking-wide block">Pelajaran /
+                            Kitab (Per Hari Mengajar)</label>
+                        <div class="space-y-2.5 bg-slate-900/40 p-3.5 rounded-xl border border-slate-700/50"
+                            id="subjects-container">
+                            {% for day_idx, day_name in day_names.items() %}
+                            <div id="subject-row-{{ day_idx }}"
+                                class="subject-row flex flex-col md:flex-row md:items-center gap-3 bg-[#111c2c] p-2.5 rounded-xl border border-slate-700/30"
+                                style="display: none;">
+                                <span
+                                    class="w-24 text-xs font-bold text-amber-400 bg-amber-500/10 border border-amber-500/20 px-2 py-1.5 rounded-lg text-center flex-shrink-0">
+                                    {{ day_name }}
+                                </span>
+                                <div class="relative flex-1">
+                                    <div class="absolute inset-y-0 left-0 flex items-center pl-4">
+                                        <svg class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24"
+                                            stroke="currentColor">
+                                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                                d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253" />
+                                        </svg>
+                                    </div>
+                                    <input type="text" name="subject_book_{{ day_idx }}"
+                                        placeholder="Contoh: Kitab Jurumiah, Alfiyah, dll."
+                                        class="input-field w-full rounded-xl pl-11 pr-4 py-2.5 text-sm bg-[#162235]">
+                                </div>
+                            </div>
+                            {% endfor %}
+                            <p id="no-days-selected-msg" class="text-xs text-slate-400 italic text-center py-1">
+                                Harap pilih Hari Mengajar di atas terlebih dahulu.
+                            </p>
+                        </div>
+                    </div>
+
+                    <!-- Password -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Kata Sandi</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-4">
+                                <svg class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                                </svg>
+                            </div>
+                            <input type="password" name="password" id="pwd" required autocomplete="new-password"
+                                placeholder="Minimal 6 karakter"
+                                class="input-field w-full rounded-xl pl-11 pr-12 py-3 text-sm">
+                            <button type="button" onclick="togglePwd('pwd')"
+                                class="absolute inset-y-0 right-0 flex items-center pr-4 text-slate-500 hover:text-slate-300 transition-colors">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+                                </svg>
+                            </button>
+                        </div>
+                    </div>
+
+                    <!-- Konfirmasi Password -->
+                    <div class="space-y-1.5">
+                        <label class="text-xs font-semibold text-slate-400 uppercase tracking-wide">Konfirmasi Kata
+                            Sandi</label>
+                        <div class="relative">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-4">
+                                <svg class="h-4 w-4 text-slate-500" fill="none" viewBox="0 0 24 24"
+                                    stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z" />
+                                </svg>
+                            </div>
+                            <input type="password" name="confirm_password" id="pwdConfirm" required
+                                autocomplete="new-password" placeholder="Ulangi kata sandi"
+                                class="input-field w-full rounded-xl pl-11 pr-12 py-3 text-sm">
+                        </div>
+                    </div>
+
+                    <!-- Submit -->
+                    <button type="submit"
+                        class="w-full py-3 px-6 bg-amber-600 hover:bg-amber-500 text-white font-bold rounded-xl transition-all duration-200 hover:shadow-lg hover:shadow-amber-500/30 hover:-translate-y-0.5 text-sm mt-2">
+                        Daftar Akun
+                    </button>
+                </div>
+            </form>
+
+            <!-- Hint -->
+            <div class="mt-6 p-4 rounded-xl bg-amber-500/10 border border-amber-500/20">
+                <p class="text-xs text-amber-300/80 text-center">
+                    Akun baru memerlukan <strong>aktivasi oleh Admin</strong> sebelum dapat digunakan.<br>
+                    Sudah punya akun? <a href="{{ url_for('auth.guru_login') }}"
+                        class="underline hover:text-amber-200">Masuk di sini</a>.
+                </p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // Data pemetaan session -> kelas dari server, dipakai langsung tanpa Jinja loop
+        const SESSION_CLASSROOMS = {{ session_classrooms | tojson | safe }};
+
+        // Kumpulkan SEMUA kelas dari semua session ke dalam satu array flat
+        const ALL_CLASSROOMS = [];
+        Object.keys(SESSION_CLASSROOMS).forEach(function (k) {
+            if (SESSION_CLASSROOMS[k]) {
+                SESSION_CLASSROOMS[k].forEach(function (c) {
+                    ALL_CLASSROOMS.push(c);
+                });
+            }
+        });
+
+        function togglePwd(id) {
+            const input = document.getElementById(id);
+            input.type = input.type === 'password' ? 'text' : 'password';
+        }
+
+        function updateClassrooms() {
+            const sessionSelect = document.getElementById('prayer_session');
+            const classSelect = document.getElementById('classroom_id');
+            if (!sessionSelect || !classSelect) return;
+
+            const selectedSession = sessionSelect.value;
+
+            // Bersihkan semua opsi
+            classSelect.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+
+            // Tentukan daftar kelas yang akan ditampilkan
+            const classList = (selectedSession && SESSION_CLASSROOMS[selectedSession])
+                ? SESSION_CLASSROOMS[selectedSession]
+                : ALL_CLASSROOMS;
+
+            // Isi opsi kelas
+            classList.forEach(function (cls) {
+                const opt = document.createElement('option');
+                opt.value = cls.id;
+                opt.textContent = cls.name;
+                classSelect.appendChild(opt);
+            });
+        }
+
+        let countdownInterval = null;
+
+        function startTimer(duration, displayElement) {
+            clearInterval(countdownInterval);
+            let timer = duration, minutes, seconds;
+            countdownInterval = setInterval(function () {
+                minutes = parseInt(timer / 60, 10);
+                seconds = parseInt(timer % 60, 10);
+
+                minutes = minutes < 10 ? "0" + minutes : minutes;
+                seconds = seconds < 10 ? "0" + seconds : seconds;
+
+                displayElement.textContent = "Sisa waktu: " + minutes + ":" + seconds;
+
+                if (--timer < 0) {
+                    clearInterval(countdownInterval);
+                    displayElement.textContent = "OTP Kedaluwarsa!";
+                    document.getElementById('btn-send-otp').disabled = false;
+                    document.getElementById('btn-send-otp').textContent = "Kirim Ulang";
+                    document.getElementById('btn-send-otp').classList.remove('opacity-50');
+                }
+            }, 1000);
+        }
+
+        function requestOTP() {
+            const emailInput = document.getElementById('email');
+            const btnSend = document.getElementById('btn-send-otp');
+            const email = emailInput.value.trim();
+
+            if (!email) {
+                alert('Email wajib diisi!');
+                return;
+            }
+
+            if (!email.toLowerCase().endsWith('@gmail.com')) {
+                alert('Harap gunakan email Google (@gmail.com)!');
+                return;
+            }
+
+            // Show loading state
+            btnSend.disabled = true;
+            btnSend.textContent = "Mengirim...";
+            btnSend.classList.add('opacity-50');
+
+            const params = new URLSearchParams();
+            params.append('email', email);
+
+            fetch('/auth/send-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: params
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        // Show OTP input container
+                        document.getElementById('otp-container').style.display = 'block';
+                        emailInput.readOnly = true;
+
+                        // Start countdown 5 mins (300 secs)
+                        startTimer(300, document.getElementById('countdown-timer'));
+                        alert(data.message);
+
+                        // If in dev mode, show floating window and auto-copy to clipboard
+                        if (data.demo_otp) {
+                            const demoAlert = document.getElementById('demo-otp-alert');
+                            const demoVal = document.getElementById('demo-otp-val');
+                            demoVal.textContent = data.demo_otp;
+                            demoAlert.classList.remove('hidden');
+
+                            // Auto-copy to clipboard
+                            navigator.clipboard.writeText(data.demo_otp).catch(err => {
+                                console.error('Failed to auto-copy OTP:', err);
+                            });
+                        }
+                    } else {
+                        alert(data.message);
+                        btnSend.disabled = false;
+                        btnSend.textContent = "Kirim OTP";
+                        btnSend.classList.remove('opacity-50');
+                    }
+                })
+                .catch(err => {
+                    console.error('Error sending OTP:', err);
+                    alert('Gagal mengirim OTP. Harap coba lagi.');
+                    btnSend.disabled = false;
+                    btnSend.textContent = "Kirim OTP";
+                    btnSend.classList.remove('opacity-50');
+                });
+        }
+
+        function verifyOTP() {
+            const email = document.getElementById('email').value.trim();
+            const codeInput = document.getElementById('otp_code');
+            const code = codeInput.value.trim();
+            const btnVerify = document.getElementById('btn-verify-otp');
+
+            if (!code || code.length !== 6) {
+                alert('Masukkan 6 digit kode OTP yang valid!');
+                return;
+            }
+
+            btnVerify.disabled = true;
+            btnVerify.textContent = "Verifikasi...";
+
+            const params = new URLSearchParams();
+            params.append('email', email);
+            params.append('code', code);
+
+            fetch('/auth/verify-otp', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+                body: params
+            })
+                .then(response => response.json())
+                .then(data => {
+                    if (data.status === 'success') {
+                        clearInterval(countdownInterval);
+                        document.getElementById('otp-container').style.display = 'none';
+                        document.getElementById('demo-otp-alert').classList.add('hidden');
+
+                        // Update email hint with beautiful verified check
+                        const emailHint = document.getElementById('email-hint');
+                        emailHint.innerHTML = '<span class="text-emerald-400 font-extrabold flex items-center gap-1"><svg class="w-3.5 h-3.5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Email Terverifikasi</span>';
+
+                        // Show form registration fields with a smooth display
+                        const regFields = document.getElementById('registration-fields');
+                        regFields.style.display = 'block';
+
+                        alert('Verifikasi berhasil! Silakan lengkapi sisa form pendaftaran.');
+                    } else {
+                        alert(data.message);
+                        btnVerify.disabled = false;
+                        btnVerify.textContent = "Verifikasi";
+                    }
+                })
+                .catch(err => {
+                    console.error('Error verifying OTP:', err);
+                    alert('Gagal memverifikasi OTP. Harap coba lagi.');
+                    btnVerify.disabled = false;
+                    btnVerify.textContent = "Verifikasi";
+                });
+        }
+
+        // Bind ke event change dropdown Jadwal
+        document.addEventListener('DOMContentLoaded', function () {
+            const sessionSelect = document.getElementById('prayer_session');
+            if (sessionSelect) {
+                sessionSelect.addEventListener('change', updateClassrooms);
+            }
+            // Jalankan sekali saat halaman pertama dimuat
+            updateClassrooms();
+
+            // Sync subject/book input rows based on checked days
+            function syncSubjectRows() {
+                const checkboxes = document.querySelectorAll('input[name="teaching_days"]');
+                let visibleCount = 0;
+
+                checkboxes.forEach(cb => {
+                    const dayIdx = cb.value;
+                    const row = document.getElementById(`subject-row-${dayIdx}`);
+                    if (!row) return;
+
+                    const input = row.querySelector(`input[name="subject_book_${dayIdx}"]`);
+
+                    if (cb.checked) {
+                        row.style.display = 'flex';
+                        if (input) input.setAttribute('required', 'required');
+                        visibleCount++;
+                    } else {
+                        row.style.display = 'none';
+                        if (input) input.removeAttribute('required');
+                    }
+                });
+
+                const msg = document.getElementById('no-days-selected-msg');
+                if (msg) {
+                    msg.style.display = visibleCount === 0 ? 'block' : 'none';
+                }
+            }
+
+            // Add event listeners to checkboxes
+            document.querySelectorAll('input[name="teaching_days"]').forEach(cb => {
+                cb.addEventListener('change', syncSubjectRows);
+            });
+
+            // Trigger on initial load
+            syncSubjectRows();
+        });
+    </script>
+
+    <!-- Floating Notification for Demo OTP (Only shown in Local Dev / Demo Fallback Mode) -->
+    <div id="demo-otp-alert"
+        class="hidden fixed bottom-5 right-5 max-w-sm p-4 rounded-xl bg-slate-800/90 border border-amber-500/30 text-slate-100 shadow-2xl backdrop-blur-md z-50 transition-all duration-300">
+        <div class="flex items-start gap-3">
+            <div class="p-2 bg-amber-500/10 rounded-lg text-amber-400">
+                <svg class="w-5 h-5 animate-pulse" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M13 10V3L4 14h7v7l9-11h-7z" />
+                </svg>
+            </div>
+            <div>
+                <h4 class="font-bold text-amber-400 text-xs tracking-wider uppercase mb-1">Mode Pengembangan (No-SMTP)
+                </h4>
+                <p class="text-[11px] text-slate-300 mb-2">SMTP belum dikonfigurasi. Silakan salin OTP di bawah ini
+                    untuk menguji:</p>
+                <div class="flex items-center gap-2">
+                    <span id="demo-otp-val"
+                        class="font-mono text-base font-extrabold text-amber-200 tracking-wider bg-slate-950/80 px-3 py-1 rounded border border-slate-700 select-all"></span>
+                    <span class="text-[10px] text-amber-400/70 font-semibold animate-pulse">✓ Disalin otomatis</span>
+                </div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>

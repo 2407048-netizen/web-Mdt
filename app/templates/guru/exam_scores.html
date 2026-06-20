@@ -1,0 +1,69 @@
+{% extends "base.html" %}
+{% block title %}Input Nilai - {{ exam.title }}{% endblock %}
+{% block header_title %}Input Nilai Ulangan{% endblock %}
+
+{% block content %}
+<!-- Exam Info -->
+<div class="bg-gradient-to-r from-violet-600 to-purple-600 rounded-2xl p-6 text-white mb-6 shadow-md">
+    <h2 class="text-xl font-bold">{{ exam.title }}</h2>
+    <p class="text-violet-200 text-sm mt-1">
+        {{ exam.schedule.subject.name }} • Kelas {{ exam.schedule.classroom.name }} •
+        {{ exam.date.strftime('%d %B %Y') }}
+    </p>
+</div>
+
+<form method="POST">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-sm text-left">
+                <thead class="bg-slate-50 text-slate-600 border-b border-slate-200">
+                    <tr>
+                        <th class="px-5 py-3 font-semibold w-12">#</th>
+                        <th class="px-5 py-3 font-semibold">Nama Santri</th>
+                        <th class="px-5 py-3 font-semibold w-40 text-center">Nilai (0-100)</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-50">
+                    {% for student in students %}
+                    {% set existing = scores_map.get(student.id) %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-5 py-3.5 text-slate-400 font-medium">{{ loop.index }}</td>
+                        <td class="px-5 py-3.5">
+                            <div class="flex items-center gap-2">
+                                <div class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white
+                                    {{ 'bg-blue-500' if student.gender == 'L' else 'bg-pink-500' }}">
+                                    {{ student.name[0] }}
+                                </div>
+                                <span class="font-semibold text-slate-800">{{ student.name }}</span>
+                            </div>
+                        </td>
+                        <td class="px-5 py-3.5 text-center">
+                            <input type="number" name="score_{{ student.id }}"
+                                   value="{{ existing.score|int if existing else '' }}"
+                                   min="0" max="100" placeholder="0"
+                                   class="w-24 text-center px-3 py-2 border border-slate-200 rounded-lg text-sm focus:outline-none focus:border-violet-400 font-semibold">
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="3" class="px-5 py-12 text-center text-slate-400">Belum ada santri di kelas ini.</td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+
+        {% if students %}
+        <div class="p-5 border-t border-slate-100 bg-slate-50/50 flex justify-between items-center">
+            <a href="{{ url_for('guru.exams') }}" class="px-5 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-100 transition-colors text-sm">
+                ← Kembali
+            </a>
+            <button type="submit" class="flex items-center gap-2 px-8 py-2.5 bg-violet-600 text-white font-bold rounded-xl hover:bg-violet-700 transition-colors shadow-sm text-sm">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                Simpan Nilai
+            </button>
+        </div>
+        {% endif %}
+    </div>
+</form>
+{% endblock %}

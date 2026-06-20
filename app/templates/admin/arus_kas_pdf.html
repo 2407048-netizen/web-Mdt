@@ -1,0 +1,218 @@
+PDF_TEMPLATE = '''
+<!DOCTYPE html>
+<html>
+
+<head>
+    <meta charset="UTF-8">
+    <title>Laporan Arus Kas - MDT Miftahul Hidayah</title>
+    <style>
+        @page {
+            size: A4 landscape;
+            margin: 15mm;
+        }
+
+        body {
+            font-family: Arial, sans-serif;
+            font-size: 11px;
+            line-height: 1.4;
+            color: #333;
+        }
+
+        .header {
+            text-align: center;
+            border-bottom: 3px solid #059669;
+            padding-bottom: 10px;
+            margin-bottom: 20px;
+        }
+
+        .header h1 {
+            margin: 0;
+            color: #059669;
+            font-size: 20px;
+            text-transform: uppercase;
+        }
+
+        .header h2 {
+            margin: 5px 0 0;
+            font-size: 16px;
+            color: #065f46;
+        }
+
+        .info-box {
+            background: #f0fdf4;
+            border: 1px solid #059669;
+            padding: 10px;
+            margin-bottom: 20px;
+            border-radius: 5px;
+        }
+
+        .info-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 5px;
+        }
+
+        .summary {
+            display: flex;
+            gap: 15px;
+            margin-bottom: 20px;
+        }
+
+        .summary-box {
+            flex: 1;
+            padding: 15px;
+            border-radius: 8px;
+            text-align: center;
+        }
+
+        .summary-box.income {
+            background: #d1fae5;
+            border: 2px solid #059669;
+        }
+
+        .summary-box.expense {
+            background: #fee2e2;
+            border: 2px solid #dc2626;
+        }
+
+        .summary-box.balance {
+            background: #fef3c7;
+            border: 2px solid #d97706;
+        }
+
+        .summary-box h3 {
+            margin: 0 0 10px;
+            font-size: 12px;
+            text-transform: uppercase;
+        }
+
+        .summary-box .amount {
+            font-size: 20px;
+            font-weight: bold;
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            margin-top: 15px;
+        }
+
+        th {
+            background: #059669;
+            color: white;
+            padding: 8px;
+            text-align: left;
+            font-size: 10px;
+        }
+
+        td {
+            padding: 6px 8px;
+            border-bottom: 1px solid #e5e7eb;
+            font-size: 10px;
+        }
+
+        tr:nth-child(even) {
+            background: #f9fafb;
+        }
+
+        .income-row {
+            color: #059669;
+            font-weight: bold;
+        }
+
+        .expense-row {
+            color: #dc2626;
+            font-weight: bold;
+        }
+
+        .footer {
+            margin-top: 30px;
+            text-align: right;
+            font-size: 10px;
+        }
+
+        .signature {
+            margin-top: 50px;
+            text-align: center;
+            display: inline-block;
+            width: 200px;
+        }
+
+        .signature-line {
+            border-top: 1px solid #333;
+            margin-top: 40px;
+            padding-top: 5px;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="header">
+        <h1>MDT Miftahul Hidayah</h1>
+        <h2>Laporan Arus Kas & Saldo</h2>
+        <p>Tahun {{ filter_year }}{% if filter_month %} - {{ months_names[filter_month] }}{% endif %}</p>
+    </div>
+
+    <div class="info-box">
+        <div class="info-row">
+            <strong>Dicetak pada:</strong>
+            <span>{{ generated_at.strftime('%d %B %Y, %H:%M:%S') }}</span>
+        </div>
+        <div class="info-row">
+            <strong>Total Transaksi:</strong>
+            <span>{{ transactions|length }} transaksi</span>
+        </div>
+    </div>
+
+    <div class="summary">
+        <div class="summary-box income">
+            <h3>Total Pemasukan</h3>
+            <div class="amount">Rp {{ "{:,.0f}".format(total_income) }}</div>
+        </div>
+        <div class="summary-box expense">
+            <h3>Total Pengeluaran</h3>
+            <div class="amount">Rp {{ "{:,.0f}".format(total_expense) }}</div>
+        </div>
+        <div class="summary-box balance">
+            <h3>Saldo Akhir</h3>
+            <div class="amount">Rp {{ "{:,.0f}".format(balance) }}</div>
+        </div>
+    </div>
+
+    <h3 style="margin-top: 25px; color: #059669;">Rincian Transaksi</h3>
+    <table>
+        <thead>
+            <tr>
+                <th>Tanggal</th>
+                <th>Keterangan</th>
+                <th>Tipe</th>
+                <th style="text-align: right;">Jumlah</th>
+                <th>Dicatat Oleh</th>
+            </tr>
+        </thead>
+        <tbody>
+            {% for t in transactions %}
+            <tr class="{{ 'income-row' if t.type == 'income' else 'expense-row' }}">
+                <td>{{ t.date.strftime('%d/%m/%Y') }}</td>
+                <td>{{ t.description }}</td>
+                <td>{{ 'Pemasukan' if t.type == 'income' else 'Pengeluaran' }}</td>
+                <td style="text-align: right;">Rp {{ "{:,.0f}".format(t.amount) }}</td>
+                <td>{{ t.recorded_by }}</td>
+            </tr>
+            {% endfor %}
+        </tbody>
+    </table>
+
+    <div class="footer">
+        <div class="signature">
+            <p>Mengetahui,</p>
+            <p>Kepala Madrasah</p>
+            <div class="signature-line">
+                <p><strong>_________________</strong></p>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
+'''

@@ -1,0 +1,161 @@
+{% extends "base.html" %}
+{% block title %}Data Santri - MDT Miftahul Hidayah{% endblock %}
+{% block header_title %}Data Santri{% endblock %}
+
+{% block content %}
+<!-- Flash Messages -->
+{% with messages = get_flashed_messages(with_categories=true) %}
+{% if messages %}
+<div class="mb-4 space-y-2">
+    {% for category, message in messages %}
+    <div class="px-4 py-3 rounded-xl text-sm font-medium 
+            {{ 'bg-emerald-100 text-emerald-800' if category == 'success' else 'bg-red-100 text-red-800' }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+</div>
+{% endif %}
+{% endwith %}
+
+<div class="mb-6 flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+    <div>
+        <h1 class="text-2xl font-bold text-slate-800 mb-1">Data Santri</h1>
+        <p class="text-slate-500 text-sm">Daftar seluruh santri aktif MDT Miftahul Hidayah.</p>
+    </div>
+
+    <div class="flex flex-wrap items-center gap-3">
+        <form method="POST" action="{{ url_for('admin.upload_students') }}" enctype="multipart/form-data"
+            class="flex items-center gap-2">
+            <label
+                class="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors shadow-sm text-sm cursor-pointer">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                        d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-8l-4-4m0 0L8 8m0 0l4 4" />
+                </svg>
+                Upload Excel
+                <input type="file" name="file" accept=".xlsx,.xls" class="hidden" onchange="this.form.submit()">
+            </label>
+        </form>
+
+        <a href="{{ url_for('admin.add_student') }}"
+            class="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition-colors shadow-sm text-sm">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4" />
+            </svg>
+            Tambah Santri Baru
+        </a>
+    </div>
+</div>
+
+<!-- Filter Kelas -->
+<div class="mb-4 flex items-center gap-3">
+    <label class="text-sm font-medium text-slate-600">Filter Kelas:</label>
+    <select onchange="window.location.href='{{ url_for('admin.students') }}?kelas_id='+this.value"
+        class="px-3 py-2 bg-white border border-slate-200 rounded-lg text-sm text-slate-600 focus:outline-none focus:ring-2 focus:ring-indigo-500">
+        <option value="">Semua Kelas</option>
+        {% for kelas in classes %}
+        <option value="{{ kelas.id }}" {% if request.args.get('kelas_id')==kelas.id|string %}selected{% endif %}>
+            {{ kelas.name }}
+        </option>
+        {% endfor %}
+    </select>
+</div>
+
+<div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left">
+            <thead
+                class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                <tr>
+                    <th class="px-5 py-4">Nama Santri</th>
+                    <th class="px-5 py-4">Jadwal</th>
+                    <th class="px-5 py-4">Kelas</th>
+                    <th class="px-5 py-4">Jenis Kelamin</th>
+                    <th class="px-5 py-4 text-center">Status</th>
+                    <th class="px-5 py-4 text-center">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for student in students %}
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-5 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-8 h-8 rounded-full flex items-center justify-center font-bold text-xs text-white
+                                {{ 'bg-blue-500' if student.gender == 'L' else 'bg-pink-500' }}">
+                                {{ student.name[0] }}
+                            </div>
+                            <span class="font-semibold text-slate-800 text-sm">{{ student.name }}</span>
+                        </div>
+                    </td>
+
+                    <td class="px-5 py-4 text-sm">
+                        {% set jadwal = '-' %}
+                        {% for cs in student.classroom_students %}
+                        {% if cs.classroom %}
+                        {% if 'Magrib' in cs.classroom.name %}{% set jadwal = 'Magrib' %}
+                        {% elif 'Subuh' in cs.classroom.name %}{% set jadwal = 'Subuh' %}
+                        {% elif 'Dzuhur' in cs.classroom.name %}{% set jadwal = 'Dzuhur' %}
+                        {% elif 'Ashar' in cs.classroom.name %}{% set jadwal = 'Ashar' %}
+                        {% endif %}
+                        {% endif %}
+                        {% endfor %}
+                        <span class="px-2 py-1 rounded text-xs font-medium bg-purple-100 text-purple-800">{{ jadwal
+                            }}</span>
+                    </td>
+
+                    <td class="px-5 py-4 text-sm text-slate-600">
+                        {% for cs in student.classroom_students %}
+                        {% if cs.classroom %}{{ cs.classroom.name }}{% endif %}
+                        {% endfor %}
+                    </td>
+
+                    <td class="px-5 py-4">
+                        <span
+                            class="px-2.5 py-1 rounded-lg text-xs font-medium
+                            {{ 'bg-blue-100 text-blue-700' if student.gender == 'L' else 'bg-pink-100 text-pink-700' }}">
+                            {{ 'Laki-laki' if student.gender == 'L' else 'Perempuan' }}
+                        </span>
+                    </td>
+
+                    <td class="px-5 py-4 text-center">
+                        {% if student.status == 'active' %}
+                        <span
+                            class="px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">Aktif</span>
+                        {% else %}
+                        <span class="px-2.5 py-1 rounded-full text-xs font-semibold bg-red-100 text-red-700">Tidak
+                            Aktif</span>
+                        {% endif %}
+                    </td>
+
+                    <td class="px-5 py-4 text-center">
+                        <div class="flex items-center justify-center gap-1">
+                            <a href="{{ url_for('admin.edit_student', id=student.id) }}"
+                                class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z" />
+                                </svg>
+                            </a>
+                            <form method="POST" action="{{ url_for('admin.delete_student', id=student.id) }}"
+                                class="inline" onsubmit="return confirm('Yakin hapus?')">
+                                <button type="submit"
+                                    class="p-2 text-slate-400 hover:text-red-600 hover:bg-red-50 rounded-lg">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                            d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16" />
+                                    </svg>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="6" class="text-center py-10 text-slate-400">Belum ada data santri.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

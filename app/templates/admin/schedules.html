@@ -1,0 +1,98 @@
+{% extends "base.html" %}
+{% block title %}Manajemen Jadwal - MDT Miftahul Hidayah{% endblock %}
+{% block header_title %}Manajemen Jadwal Mengajar{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex justify-between items-center">
+    <p class="text-slate-500 text-sm">Kelola seluruh jadwal mengajar guru per hari dan jadwal ngaji.</p>
+    <a href="{{ url_for('admin.add_schedule') }}"
+       class="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors shadow-sm">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Tambah Jadwal Baru
+    </a>
+</div>
+
+<div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-left">
+            <thead class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                <tr>
+                    <th class="px-5 py-4">Guru / Ustadz</th>
+                    <th class="px-5 py-4">Kelas</th>
+                    <th class="px-5 py-4">Mata Pelajaran / Kitab</th>
+                    <th class="px-5 py-4">Hari</th>
+                    <th class="px-5 py-4">Jadwal</th>
+                    <th class="px-5 py-4 text-center">Status</th>
+                    <th class="px-5 py-4 text-center">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-100">
+                {% for sch in schedules %}
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-5 py-4">
+                        <div class="flex items-center gap-3">
+                            <div class="w-9 h-9 rounded-full bg-indigo-100 text-indigo-600 font-bold flex items-center justify-center text-sm">
+                                {{ sch.teacher.username[0].upper() }}
+                            </div>
+                            <span class="font-semibold text-slate-800 text-sm">{{ sch.teacher.username }}</span>
+                        </div>
+                    </td>
+                    <td class="px-5 py-4">
+                        <span class="font-medium text-slate-700 text-sm">Kelas {{ sch.classroom.name }}</span>
+                    </td>
+                    <td class="px-5 py-4 text-sm text-slate-600">{{ sch.subject.name }}</td>
+                    <td class="px-5 py-4">
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold
+                            {% if sch.day_of_week == 4 %}bg-amber-100 text-amber-700
+                            {% elif sch.day_of_week in [5,6] %}bg-red-100 text-red-600
+                            {% else %}bg-slate-100 text-slate-600{% endif %}">
+                            {{ day_names[sch.day_of_week] }}
+                        </span>
+                    </td>
+                    <td class="px-5 py-4">
+                        <span class="px-2.5 py-1 rounded-lg text-xs font-semibold
+                            {% if sch.prayer_session == 'Subuh' %}bg-blue-100 text-blue-700
+                            {% elif sch.prayer_session == 'Dzuhur' %}bg-yellow-100 text-yellow-700
+                            {% elif sch.prayer_session == 'Ashar' %}bg-orange-100 text-orange-700
+                            {% else %}bg-purple-100 text-purple-700{% endif %}">
+                            {{ sch.prayer_session }}
+                        </span>
+                    </td>
+                    <td class="px-5 py-4 text-center">
+                        <span class="inline-flex items-center gap-1.5 px-2.5 py-1 rounded-full text-xs font-semibold
+                            {% if sch.is_active %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-500{% endif %}">
+                            <span class="w-1.5 h-1.5 rounded-full {% if sch.is_active %}bg-emerald-500{% else %}bg-slate-400{% endif %}"></span>
+                            {{ 'Aktif' if sch.is_active else 'Nonaktif' }}
+                        </span>
+                    </td>
+                    <td class="px-5 py-4 text-center">
+                        <div class="flex items-center justify-center gap-2">
+                            <a href="{{ url_for('admin.edit_schedule', id=sch.id) }}"
+                               class="p-2 text-slate-400 hover:text-indigo-600 hover:bg-indigo-50 rounded-lg transition-colors" title="Edit">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15.232 5.232l3.536 3.536m-2.036-5.036a2.5 2.5 0 113.536 3.536L6.5 21.036H3v-3.572L16.732 3.732z"/></svg>
+                            </a>
+                            <form method="POST" action="{{ url_for('admin.delete_schedule', id=sch.id) }}"
+                                  onsubmit="return confirm('Yakin ingin menonaktifkan jadwal ini?')">
+                                <button type="submit" class="p-2 text-slate-400 hover:text-red-500 hover:bg-red-50 rounded-lg transition-colors" title="Hapus">
+                                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 7l-.867 12.142A2 2 0 0116.138 21H7.862a2 2 0 01-1.995-1.858L5 7m5 4v6m4-6v6m1-10V4a1 1 0 00-1-1h-4a1 1 0 00-1 1v3M4 7h16"/></svg>
+                                </button>
+                            </form>
+                        </div>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="7" class="px-5 py-16 text-center">
+                        <div class="text-slate-400">
+                            <svg class="h-12 w-12 mx-auto mb-3 opacity-50" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+                            <p class="font-medium">Belum ada jadwal yang dibuat.</p>
+                            <a href="{{ url_for('admin.add_schedule') }}" class="text-indigo-600 text-sm mt-1 inline-block hover:underline">+ Tambah Jadwal Pertama</a>
+                        </div>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

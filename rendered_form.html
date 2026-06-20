@@ -1,0 +1,622 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Tambah Jadwal - MDT Miftahul Hidayah</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Inter', sans-serif; background-color: #f1f5f9; color: #334155; }
+        .sidebar { background: linear-gradient(180deg, #1e293b 0%, #0f172a 100%); }
+        
+    </style>
+</head>
+<body class="flex h-screen overflow-hidden">
+
+    <!-- Sidebar -->
+    <aside class="sidebar w-64 text-white hidden md:flex flex-col">
+    <!-- Logo & Branding -->
+    <div class="p-5 border-b border-white/10">
+        <div class="flex items-center gap-3">
+            <img src="/static/logo.png" 
+                 alt="Logo" class="w-10 h-10 object-contain rounded-xl bg-white/10 p-1">
+            <div>
+                <h2 class="text-sm font-bold text-white leading-tight">MDT Miftahul</h2>
+                <p class="text-xs text-slate-400">Hidayah • </p>
+            </div>
+        </div>
+    </div>
+
+    <!-- Navigation -->
+    <nav class="flex-1 px-3 py-4 space-y-1 overflow-y-auto">
+
+        
+        <!-- ── GURU MENU ── -->
+        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 pt-2 pb-1">Mengajar</p>
+
+        <a href="/guru/dashboard"
+           class="nav-link ">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 12l2-2m0 0l7-7 7 7M5 10v10a1 1 0 001 1h3m10-11l2 2m-2-2v10a1 1 0 01-1 1h-3m-6 0a1 1 0 001-1v-4a1 1 0 011-1h2a1 1 0 011 1v4a1 1 0 001 1m-6 0h6"/>
+            </svg>
+            Jadwal Hari Ini
+        </a>
+
+        <a href="/guru/jadwal"
+           class="nav-link ">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/>
+            </svg>
+            Jadwal Saya
+        </a>
+
+        <p class="text-[10px] font-bold text-slate-500 uppercase tracking-widest px-3 pt-4 pb-1">Akademik</p>
+
+        <a href="/guru/exams"
+           class="nav-link ">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/>
+            </svg>
+            Ulangan Mingguan
+        </a>
+
+        <a href="/guru/tawasulan"
+           class="nav-link ">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+            </svg>
+            Tawasulan
+        </a>
+
+        <a href="/guru/mutabaah"
+           class="nav-link ">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/>
+            </svg>
+            Mutaba'ah
+        </a>
+        
+
+    </nav>
+
+    <!-- User & Logout -->
+    <div class="p-3 border-t border-white/10">
+        <div class="flex items-center gap-3 px-2 py-2 mb-2">
+            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed="
+                 class="w-8 h-8 rounded-full bg-slate-700" alt="Avatar">
+            <div class="flex-1 min-w-0">
+                <p class="text-xs font-bold text-white truncate"></p>
+                <p class="text-[10px] text-slate-400 truncate"></p>
+            </div>
+        </div>
+        <a href="/auth/logout"
+           class="flex items-center gap-2 w-full px-3 py-2 rounded-xl text-sm font-medium text-slate-400 hover:text-white hover:bg-slate-800 transition-colors">
+            <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 16l4-4m0 0l-4-4m4 4H7m6 4v1a3 3 0 01-3 3H6a3 3 0 01-3-3V7a3 3 0 013-3h4a3 3 0 013 3v1"/>
+            </svg>
+            Keluar
+        </a>
+    </div>
+</aside>
+
+<style>
+.nav-link {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    padding: 0.625rem 0.75rem;
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: #94a3b8;
+    transition: all 0.15s ease;
+}
+.nav-link:hover {
+    color: #fff;
+    background: rgba(255,255,255,0.08);
+}
+.nav-link.active {
+    color: #fff;
+    background: rgba(99,102,241,0.25);
+    border: 1px solid rgba(99,102,241,0.4);
+}
+</style>
+
+    <!-- Main Content -->
+    <main class="flex-1 flex flex-col h-screen overflow-hidden">
+
+        <!-- Topbar -->
+        <header class="bg-white border-b border-slate-200 px-6 py-3.5 flex justify-between items-center z-10 shadow-sm flex-shrink-0">
+            <div class="flex items-center gap-3">
+                <!-- Mobile menu placeholder -->
+                <h2 class="text-xl font-bold text-slate-800">Tambah Jadwal Mengajar</h2>
+            </div>
+            <div class="flex items-center gap-3">
+                <!-- Role Badge -->
+                <span class="hidden md:inline-flex items-center px-2.5 py-1 rounded-full text-xs font-semibold
+                    bg-emerald-100 text-emerald-700">
+                    
+                </span>
+                <!-- Avatar -->
+                <div class="flex items-center gap-2.5">
+                    <span class="text-sm font-medium text-slate-700 hidden md:block"></span>
+                    <img src="https://api.dicebear.com/7.x/avataaars/svg?seed="
+                         class="w-9 h-9 rounded-full border-2 border-indigo-400 bg-slate-100" alt="Avatar">
+                </div>
+            </div>
+        </header>
+
+        <!-- Flash Messages -->
+        
+          
+        
+
+        <!-- Content -->
+        <div class="flex-1 overflow-y-auto p-6 md:p-8">
+            
+<div class="max-w-2xl mx-auto">
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="p-6 border-b border-slate-100 bg-gradient-to-r from-indigo-600 to-indigo-700 text-white">
+            <h3 class="font-bold text-lg">
+                Buat Jadwal Mengajar
+            </h3>
+            <p class="text-indigo-200 text-sm mt-1">Tentukan guru, kelas, mata pelajaran, dan waktu mengajarnya.</p>
+        </div>
+
+        <form method="POST" class="p-6 space-y-5">
+            <!-- Guru -->
+            <div class="space-y-1.5">
+                <label class="block text-sm font-semibold text-slate-700">
+                    Guru / Ustadz yang Bertugas <span class="text-red-500">*</span>
+                </label>
+                <select name="teacher_id" required
+                        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 bg-white">
+                    <option value="">-- Pilih Guru --</option>
+                    
+                    <option value="2"
+                        >
+                        Ustadz Ahmad
+                    </option>
+                    
+                    <option value="3"
+                        >
+                        Ustadzah Fatimah
+                    </option>
+                    
+                </select>
+            </div>
+
+            <!-- Mata Pelajaran -->
+            <div class="space-y-1.5">
+                <label class="block text-sm font-semibold text-slate-700">
+                    Mata Pelajaran / Kitab <span class="text-red-500">*</span>
+                </label>
+                <select name="subject_id" required
+                        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 bg-white">
+                    <option value="">-- Pilih Mata Pelajaran --</option>
+                    
+                    <option value="5"
+                        >
+                        Akidah Akhlak
+                    </option>
+                    
+                    <option value="1"
+                        >
+                        Al-Quran / Tilawah
+                    </option>
+                    
+                    <option value="2"
+                        >
+                        Fiqih
+                    </option>
+                    
+                    <option value="4"
+                        >
+                        Hadits Arbain
+                    </option>
+                    
+                    <option value="3"
+                        >
+                        Nahwu Shorof
+                    </option>
+                    
+                    <option value="6"
+                        >
+                        Tawasulan
+                    </option>
+                    
+                </select>
+            </div>
+
+            <!-- Hari & Sesi (2 kolom) -->
+            <div class="grid grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-slate-700">
+                        Hari <span class="text-red-500">*</span>
+                    </label>
+                    <select name="day_of_week" required
+                            class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 bg-white">
+                        <option value="">-- Pilih Hari --</option>
+                        
+                        <option value="0"
+                            >
+                            Senin
+                        </option>
+                        
+                        <option value="1"
+                            >
+                            Selasa
+                        </option>
+                        
+                        <option value="2"
+                            >
+                            Rabu
+                        </option>
+                        
+                        <option value="3"
+                            >
+                            Kamis
+                        </option>
+                        
+                        <option value="4"
+                            >
+                            Jum&#39;at
+                        </option>
+                        
+                        <option value="5"
+                            >
+                            Sabtu
+                        </option>
+                        
+                        <option value="6"
+                            >
+                            Minggu
+                        </option>
+                        
+                    </select>
+                </div>
+
+                <div class="space-y-1.5">
+                    <label class="block text-sm font-semibold text-slate-700">
+                        Jadwal <span class="text-red-500">*</span>
+                    </label>
+                    <select name="prayer_session" id="prayer_session" required
+                            class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 bg-white">
+                        <option value="">-- Pilih Jadwal --</option>
+                        
+                        <option value="Subuh"
+                            >
+                            Subuh
+                        </option>
+                        
+                        <option value="Dzuhur"
+                            >
+                            Dzuhur
+                        </option>
+                        
+                        <option value="Ashar"
+                            >
+                            Ashar
+                        </option>
+                        
+                        <option value="Magrib"
+                            >
+                            Magrib
+                        </option>
+                        
+                    </select>
+                </div>
+            </div>
+
+            <!-- Kelas (Bawah) -->
+            <div class="space-y-1.5">
+                <label class="block text-sm font-semibold text-slate-700">
+                    Kelas <span class="text-red-500">*</span>
+                </label>
+                <select name="classroom_id" id="classroom_id" required
+                        class="w-full border border-slate-200 rounded-xl px-4 py-2.5 text-sm outline-none focus:border-indigo-500 focus:ring-2 focus:ring-indigo-500/20 bg-white">
+                    <option value="">-- Pilih Kelas --</option>
+                    
+                    <option value="1"
+                        >
+                        Kelas Subuh 1 (Level 1)
+                    </option>
+                    
+                    <option value="2"
+                        >
+                        Kelas Subuh 2 (Level 1)
+                    </option>
+                    
+                    <option value="3"
+                        >
+                        Kelas Subuh 3 (Level 1)
+                    </option>
+                    
+                    <option value="4"
+                        >
+                        Kelas Dzuhur 1 (Level 2)
+                    </option>
+                    
+                    <option value="5"
+                        >
+                        Kelas Ashar 1 (Level 3)
+                    </option>
+                    
+                    <option value="6"
+                        >
+                        Kelas Ashar 2 (Level 3)
+                    </option>
+                    
+                    <option value="7"
+                        >
+                        Kelas Ashar 3 (Level 3)
+                    </option>
+                    
+                    <option value="8"
+                        >
+                        Kelas Magrib 1 (Level 4)
+                    </option>
+                    
+                    <option value="9"
+                        >
+                        Kelas Magrib 2 (Level 4)
+                    </option>
+                    
+                    <option value="10"
+                        >
+                        Kelas Magrib 3 (Level 4)
+                    </option>
+                    
+                    <option value="11"
+                        >
+                        Kelas Magrib 4 (Level 4)
+                    </option>
+                    
+                    <option value="12"
+                        >
+                        Kelas Magrib 5 (Level 4)
+                    </option>
+                    
+                    <option value="13"
+                        >
+                        Kelas Magrib 6 (Level 4)
+                    </option>
+                    
+                    <option value="14"
+                        >
+                        Kelas Magrib 7 (Level 4)
+                    </option>
+                    
+                    <option value="15"
+                        >
+                        Kelas Magrib 8 (Level 4)
+                    </option>
+                    
+                    <option value="16"
+                        >
+                        Kelas Magrib 9 (Level 4)
+                    </option>
+                    
+                </select>
+            </div>
+
+            <!-- Info Aturan Libur -->
+            <div class="bg-amber-50 border border-amber-200 rounded-xl p-4 text-sm text-amber-800">
+                <p class="font-semibold mb-2">⚠️ Aturan Hari Libur MDT:</p>
+                <ul class="space-y-1 text-xs">
+                    <li>• <strong>Subuh</strong>: LIBUR hari Jum'at</li>
+                    <li>• <strong>Dzuhur & Ashar</strong>: LIBUR hari Sabtu</li>
+                    <li>• <strong>Magrib</strong>: LIBUR hari Selasa • Jum'at = Tawasulan (khusus)</li>
+                </ul>
+            </div>
+
+            <!-- Tombol -->
+            <div class="flex gap-3 pt-2">
+                <a href="/admin/schedules"
+                   class="flex-1 text-center px-5 py-2.5 border border-slate-200 text-slate-600 font-medium rounded-xl hover:bg-slate-50 transition-colors">
+                    Batal
+                </a>
+                <button type="submit"
+                        class="flex-1 px-5 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors shadow-sm">
+                    Tambahkan Jadwal
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+    (function() {
+        function init() {
+            alert("Diagnostic: Script initialized successfully!");
+            
+            const sessionSelect = document.getElementById('prayer_session');
+            const classSelect = document.getElementById('classroom_id');
+            
+            if (!sessionSelect || !classSelect) {
+                alert("Diagnostic Error: sessionSelect or classSelect not found!");
+                console.error("sessionSelect or classSelect not found in DOM");
+                return;
+            }
+            
+            // Simpan data pemetaan dari backend
+            const sessionClassrooms = {"Ashar": [{"id": 5, "name": "Kelas Ashar 1"}, {"id": 6, "name": "Kelas Ashar 2"}, {"id": 7, "name": "Kelas Ashar 3"}], "Dzuhur": [{"id": 4, "name": "Kelas Dzuhur 1"}], "Magrib": [{"id": 8, "name": "Kelas Magrib 1"}, {"id": 9, "name": "Kelas Magrib 2"}, {"id": 10, "name": "Kelas Magrib 3"}, {"id": 11, "name": "Kelas Magrib 4"}, {"id": 12, "name": "Kelas Magrib 5"}, {"id": 13, "name": "Kelas Magrib 6"}, {"id": 14, "name": "Kelas Magrib 7"}, {"id": 15, "name": "Kelas Magrib 8"}, {"id": 16, "name": "Kelas Magrib 9"}], "Subuh": [{"id": 1, "name": "Kelas Subuh 1"}, {"id": 2, "name": "Kelas Subuh 2"}, {"id": 3, "name": "Kelas Subuh 3"}]};
+            
+            // Simpan classroom_id terpilih awal (jika mode edit)
+            const initialClassroomId = "";
+
+            function updateClassrooms() {
+                const selectedSession = sessionSelect.value;
+                alert("Diagnostic: updateClassrooms called! selectedSession = " + selectedSession);
+                
+                // Bersihkan pilihan kelas
+                classSelect.innerHTML = '<option value="">-- Pilih Kelas --</option>';
+                
+                if (selectedSession && sessionClassrooms[selectedSession]) {
+                    const classes = sessionClassrooms[selectedSession];
+                    alert("Diagnostic: Filtering classes for " + selectedSession + ". Found " + classes.length + " classes.");
+                    classes.forEach(function(cls) {
+                        const opt = document.createElement('option');
+                        opt.value = cls.id;
+                        opt.textContent = cls.name;
+                        if (String(cls.id) === String(initialClassroomId)) {
+                            opt.selected = true;
+                        }
+                        classSelect.appendChild(opt);
+                    });
+                } else {
+                    alert("Diagnostic: Showing all classes (no session selected)");
+                    // Jika tidak ada session terpilih, masukkan semua kelas default
+                    
+                    const opt = document.createElement('option');
+                    opt.value = "1";
+                    opt.textContent = "Kelas Subuh 1 (Level 1)";
+                    if ("1" === String(initialClassroomId)) {
+                        opt.selected = true;
+                    }
+                    classSelect.appendChild(opt);
+                    
+                    const opt = document.createElement('option');
+                    opt.value = "2";
+                    opt.textContent = "Kelas Subuh 2 (Level 1)";
+                    if ("2" === String(initialClassroomId)) {
+                        opt.selected = true;
+                    }
+                    classSelect.appendChild(opt);
+                    
+                    const opt = document.createElement('option');
+                    opt.value = "3";
+                    opt.textContent = "Kelas Subuh 3 (Level 1)";
+                    if ("3" === String(initialClassroomId)) {
+                        opt.selected = true;
+                    }
+                    classSelect.appendChild(opt);
+                    
+                    const opt = document.createElement('option');
+                    opt.value = "4";
+                    opt.textContent = "Kelas Dzuhur 1 (Level 2)";
+                    if ("4" === String(initialClassroomId)) {
+                        opt.selected = true;
+                    }
+                    classSelect.appendChild(opt);
+                    
+                    const opt = document.createElement('option');
+                    opt.value = "5";
+                    opt.textContent = "Kelas Ashar 1 (Level 3)";
+                    if ("5" === String(initialClassroomId)) {
+                        opt.selected = true;
+                    }
+                    classSelect.appendChild(opt);
+                    
+                    const opt = document.createElement('option');
+                    opt.value = "6";
+                    opt.textContent = "Kelas Ashar 2 (Level 3)";
+                    if ("6" === String(initialClassroomId)) {
+                        opt.selected = true;
+                    }
+                    classSelect.appendChild(opt);
+                    
+                    const opt = document.createElement('option');
+                    opt.value = "7";
+                    opt.textContent = "Kelas Ashar 3 (Level 3)";
+                    if ("7" === String(initialClassroomId)) {
+                        opt.selected = true;
+                    }
+                    classSelect.appendChild(opt);
+                    
+                    const opt = document.createElement('option');
+                    opt.value = "8";
+                    opt.textContent = "Kelas Magrib 1 (Level 4)";
+                    if ("8" === String(initialClassroomId)) {
+                        opt.selected = true;
+                    }
+                    classSelect.appendChild(opt);
+                    
+                    const opt = document.createElement('option');
+                    opt.value = "9";
+                    opt.textContent = "Kelas Magrib 2 (Level 4)";
+                    if ("9" === String(initialClassroomId)) {
+                        opt.selected = true;
+                    }
+                    classSelect.appendChild(opt);
+                    
+                    const opt = document.createElement('option');
+                    opt.value = "10";
+                    opt.textContent = "Kelas Magrib 3 (Level 4)";
+                    if ("10" === String(initialClassroomId)) {
+                        opt.selected = true;
+                    }
+                    classSelect.appendChild(opt);
+                    
+                    const opt = document.createElement('option');
+                    opt.value = "11";
+                    opt.textContent = "Kelas Magrib 4 (Level 4)";
+                    if ("11" === String(initialClassroomId)) {
+                        opt.selected = true;
+                    }
+                    classSelect.appendChild(opt);
+                    
+                    const opt = document.createElement('option');
+                    opt.value = "12";
+                    opt.textContent = "Kelas Magrib 5 (Level 4)";
+                    if ("12" === String(initialClassroomId)) {
+                        opt.selected = true;
+                    }
+                    classSelect.appendChild(opt);
+                    
+                    const opt = document.createElement('option');
+                    opt.value = "13";
+                    opt.textContent = "Kelas Magrib 6 (Level 4)";
+                    if ("13" === String(initialClassroomId)) {
+                        opt.selected = true;
+                    }
+                    classSelect.appendChild(opt);
+                    
+                    const opt = document.createElement('option');
+                    opt.value = "14";
+                    opt.textContent = "Kelas Magrib 7 (Level 4)";
+                    if ("14" === String(initialClassroomId)) {
+                        opt.selected = true;
+                    }
+                    classSelect.appendChild(opt);
+                    
+                    const opt = document.createElement('option');
+                    opt.value = "15";
+                    opt.textContent = "Kelas Magrib 8 (Level 4)";
+                    if ("15" === String(initialClassroomId)) {
+                        opt.selected = true;
+                    }
+                    classSelect.appendChild(opt);
+                    
+                    const opt = document.createElement('option');
+                    opt.value = "16";
+                    opt.textContent = "Kelas Magrib 9 (Level 4)";
+                    if ("16" === String(initialClassroomId)) {
+                        opt.selected = true;
+                    }
+                    classSelect.appendChild(opt);
+                    
+                }
+            }
+
+            sessionSelect.addEventListener('change', updateClassrooms);
+            
+            // Jalankan saat load awal
+            updateClassrooms();
+        }
+
+        if (document.readyState !== 'loading') {
+            init();
+        } else {
+            document.addEventListener('DOMContentLoaded', init);
+        }
+    })();
+</script>
+
+        </div>
+    </main>
+
+    
+</body>
+</html>

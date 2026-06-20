@@ -1,0 +1,139 @@
+{% extends "base.html" %}
+{% block title %}Cetak Ijazah - MDT Miftahul Hidayah{% endblock %}
+{% block header_title %}Cetak Ijazah Santri{% endblock %}
+
+{% block content %}
+<div class="space-y-6">
+    <!-- Header & Export Button -->
+    <div class="flex flex-col sm:flex-row justify-between items-start sm:items-center gap-4">
+        <div>
+            <h1 class="text-2xl font-bold text-slate-800">Pencetakan Ijazah</h1>
+            <p class="text-slate-500 text-sm mt-1">Kelola dan cetak ijazah santri yang telah lulus.</p>
+        </div>
+        <a href="{{ url_for('admin.export_ijazah') }}"
+            class="px-5 py-2.5 bg-emerald-600 text-white font-semibold rounded-xl hover:bg-emerald-700 transition shadow-sm flex items-center gap-2">
+            <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                    d="M12 10v6m0 0l-3-3m3 3l3-3m2 8H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+            </svg>
+            Export Excel
+        </a>
+    </div>
+
+    <!-- Filter Section -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5">
+        <form method="GET" action="{{ url_for('admin.ijazah') }}" class="flex flex-wrap gap-4 items-end">
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Level
+                    Kelas</label>
+                <select name="level"
+                    class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                    <option value="">Semua Level</option>
+                    {% for lv in levels %}
+                    <option value="{{ lv }}" {% if selected_level==lv %}selected{% endif %}>Level {{ lv }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex-1 min-w-[200px]">
+                <label class="block text-xs font-semibold text-slate-500 uppercase tracking-wider mb-2">Tahun
+                    Ajaran</label>
+                <select name="academic_year_id"
+                    class="w-full px-4 py-2.5 bg-white border border-slate-200 rounded-xl text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500 transition">
+                    <option value="">Semua Tahun</option>
+                    {% for ay in academic_years %}
+                    <option value="{{ ay.id }}" {% if selected_ay==ay.id %}selected{% endif %}>{{ ay.name }}</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="flex gap-2">
+                <button type="submit"
+                    class="px-5 py-2.5 bg-indigo-600 text-white text-sm font-medium rounded-xl hover:bg-indigo-700 transition shadow-sm flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z" />
+                    </svg>
+                    Filter
+                </button>
+                <a href="{{ url_for('admin.ijazah') }}"
+                    class="px-4 py-2.5 bg-slate-100 text-slate-600 text-sm font-medium rounded-xl hover:bg-slate-200 transition text-center">
+                    ↺ Reset
+                </a>
+            </div>
+        </form>
+    </div>
+
+    <!-- Data Table -->
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left">
+                <thead
+                    class="bg-slate-50 border-b border-slate-200 text-xs font-semibold text-slate-500 uppercase tracking-wide">
+                    <tr>
+                        <th class="px-6 py-4">Nama Santri</th>
+                        <th class="px-6 py-4">NIS</th>
+                        <th class="px-6 py-4">Kelas</th>
+                        <th class="px-6 py-4">Tahun Ajaran</th>
+                        <th class="px-6 py-4 text-center">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    {% for student in students %}
+                    <tr class="hover:bg-slate-50 transition-colors">
+                        <td class="px-6 py-4">
+                            <div class="flex items-center gap-3">
+                                <div class="w-9 h-9 rounded-full flex items-center justify-center font-bold text-xs text-white
+                                    {{ 'bg-blue-500' if student.gender == 'L' else 'bg-pink-500' }}">
+                                    {{ student.name[0]|upper }}
+                                </div>
+                                <span class="font-semibold text-slate-800 text-sm">{{ student.name }}</span>
+                            </div>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-slate-600 font-mono">{{ student.nis }}</td>
+                        <td class="px-6 py-4 text-sm text-slate-600">
+                            {% set cls_name = '-' %}
+                            {% for cs in student.classroom_students %}
+                            {% if cs.classroom %}{% set cls_name = cs.classroom.name %}{% endif %}
+                            {% endfor %}
+                            <span class="px-2.5 py-1 bg-slate-100 text-slate-700 rounded-lg text-xs font-medium">{{
+                                cls_name }}</span>
+                        </td>
+                        <td class="px-6 py-4 text-sm text-slate-600">
+                            {% set ay_name = '-' %}
+                            {% for cs in student.classroom_students %}
+                            {% if cs.academic_year %}{% set ay_name = cs.academic_year.name %}{% endif %}
+                            {% endfor %}
+                            {{ ay_name }}
+                        </td>
+                        <td class="px-6 py-4 text-center">
+                            <a href="{{ url_for('admin.print_ijazah', student_id=student.id) }}" target="_blank"
+                                class="inline-flex items-center gap-2 px-4 py-2 bg-emerald-600 text-white text-xs font-medium rounded-lg hover:bg-emerald-700 transition shadow-sm">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                        d="M17 17h2a2 2 0 002-2v-4a2 2 0 00-2-2H5a2 2 0 00-2 2v4a2 2 0 002 2h2m2 4h6a2 2 0 002-2v-4a2 2 0 00-2-2H9a2 2 0 00-2 2v4a2 2 0 002 2zm8-12V5a2 2 0 00-2-2H9a2 2 0 00-2 2v4h10z" />
+                                </svg>
+                                Cetak Ijazah
+                            </a>
+                        </td>
+                    </tr>
+                    {% else %}
+                    <tr>
+                        <td colspan="5" class="px-6 py-16 text-center">
+                            <div class="flex flex-col items-center justify-center text-slate-400">
+                                <svg class="w-16 h-16 mb-4 opacity-40" fill="none" stroke="currentColor"
+                                    viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5"
+                                        d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z" />
+                                </svg>
+                                <p class="text-slate-500 font-medium">Tidak ada data santri yang sesuai filter.</p>
+                                <p class="text-sm text-slate-400 mt-1">Silakan ubah filter atau tambahkan data santri
+                                    terlebih dahulu.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+    </div>
+</div>
+{% endblock %}

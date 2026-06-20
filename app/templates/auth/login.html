@@ -1,0 +1,194 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Login - MDT Miftahul Hidayah</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+        
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            /* Latar belakang gelap sesuai foto */
+            background: linear-gradient(135deg, #0f172a 0%, #1e293b 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: #e2e8f0;
+        }
+
+        .back-link {
+            position: absolute;
+            top: 20px;
+            left: 20px;
+            color: #94a3b8;
+            text-decoration: none;
+            font-size: 14px;
+            transition: color 0.3s;
+        }
+        .back-link:hover { color: #fbbf24; }
+
+        .container {
+            /* Kartu dengan latar gelap dan sedikit transparan */
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(10px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 20px;
+            padding: 40px;
+            width: 100%;
+            max-width: 420px;
+            box-shadow: 0 20px 50px rgba(0, 0, 0, 0.5);
+        }
+
+        .header { text-align: center; margin-bottom: 30px; }
+        
+        .logo-icon {
+            width: 60px;
+            height: 60px;
+            background: rgba(251, 191, 36, 0.1);
+            border-radius: 16px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            margin: 0 auto 15px;
+            color: #fbbf24;
+            border: 1px solid rgba(251, 191, 36, 0.2);
+        }
+
+        h1 { font-size: 22px; font-weight: 700; color: #fff; margin-bottom: 5px; }
+        .subtitle { font-size: 14px; color: #fbbf24; font-weight: 600; }
+
+        .form-group { margin-bottom: 20px; }
+        
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+        
+        .input-wrapper {
+            position: relative;
+            display: flex;
+            align-items: center;
+            background: #0f172a; /* Input lebih gelap */
+            border: 1px solid #334155;
+            border-radius: 12px;
+            padding: 0 12px;
+            transition: border-color 0.3s;
+        }
+        
+        .input-wrapper:focus-within {
+            border-color: #fbbf24;
+            box-shadow: 0 0 0 2px rgba(251, 191, 36, 0.1);
+        }
+
+        .input-icon { color: #64748b; margin-right: 10px; }
+
+        input[type="email"], input[type="password"] {
+            width: 100%;
+            background: transparent;
+            border: none;
+            padding: 14px 0;
+            color: #fff;
+            font-size: 14px;
+            outline: none;
+        }
+        input::placeholder { color: #64748b; }
+
+        .btn {
+            width: 100%;
+            padding: 14px;
+            background: linear-gradient(135deg, #d97706 0%, #fbbf24 100%);
+            color: #0f172a;
+            border: none;
+            border-radius: 12px;
+            font-weight: 700;
+            font-size: 14px;
+            cursor: pointer;
+            transition: transform 0.2s, opacity 0.2s;
+            margin-top: 10px;
+        }
+        .btn:hover { opacity: 0.9; transform: translateY(-1px); }
+
+        .info-box {
+            margin-top: 25px;
+            padding: 15px;
+            background: rgba(251, 191, 36, 0.05);
+            border: 1px solid rgba(251, 191, 36, 0.2);
+            border-radius: 12px;
+            text-align: center;
+        }
+        .info-text { font-size: 13px; color: #94a3b8; line-height: 1.5; }
+        .register-link { color: #fbbf24; text-decoration: underline; cursor: pointer; font-weight: 600; }
+        .register-link:hover { color: #fff; }
+
+        .alert {
+            padding: 12px;
+            border-radius: 12px;
+            font-size: 13px;
+            margin-bottom: 20px;
+            text-align: center;
+        }
+        .alert-error { background: rgba(239, 68, 68, 0.2); color: #fca5a5; border: 1px solid rgba(239, 68, 68, 0.3); }
+        .alert-success { background: rgba(34, 197, 94, 0.2); color: #86efac; border: 1px solid rgba(34, 197, 94, 0.3); }
+    </style>
+</head>
+<body>
+
+    <a href="{{ url_for('auth.register') }}" class="back-link">
+        < Kembali ke Halaman Daftar
+    </a>
+
+    <div class="container">
+        <div class="header">
+            <div class="logo-icon">
+                <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M15 3h4a2 2 0 0 1 2 2v14a2 2 0 0 1-2 2h-4"></path><polyline points="10 17 15 12 10 7"></polyline><line x1="15" y1="12" x2="3" y2="12"></line></svg>
+            </div>
+            <h1>Masuk Akun</h1>
+            <p class="subtitle">MDT Miftahul Hidayah</p>
+        </div>
+
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }}">
+                        {{ message }}
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <form method="POST" action="{{ url_for('auth.login') }}">
+            <div class="form-group">
+                <label>Email</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">@</span>
+                    <input type="email" name="email" placeholder="email@gmail.com" required autocomplete="off">
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>Password</label>
+                <div class="input-wrapper">
+                    <span class="input-icon">🔒</span>
+                    <input type="password" name="password" placeholder="Masukkan password" required>
+                </div>
+            </div>
+
+            <button type="submit" class="btn">Masuk Sekarang</button>
+        </form>
+
+        <div class="info-box">
+            <p class="info-text">
+                Belum punya akun? <a href="{{ url_for('auth.register') }}" class="register-link">Daftar di sini</a>.
+            </p>
+        </div>
+    </div>
+
+</body>
+</html>

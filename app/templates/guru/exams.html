@@ -1,0 +1,83 @@
+{% extends "base.html" %}
+{% block title %}Ulangan Mingguan - MDT Miftahul Hidayah{% endblock %}
+{% block header_title %}Ulangan Mingguan{% endblock %}
+
+{% block content %}
+<div class="mb-6 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+    <p class="text-slate-500 text-sm">Kelola ulangan mingguan untuk kelas yang Anda ajar.</p>
+    <button onclick="document.getElementById('addExamModal').classList.remove('hidden')"
+            class="flex items-center gap-2 px-5 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors shadow-sm text-sm">
+        <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 4v16m8-8H4"/></svg>
+        Buat Ulangan Baru
+    </button>
+</div>
+
+{% if exams %}
+<div class="space-y-4">
+    {% for exam in exams %}
+    <div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden hover:shadow-md transition-shadow">
+        <div class="p-5 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+            <div class="flex items-center gap-4">
+                <div class="w-12 h-12 rounded-xl bg-violet-100 text-violet-600 flex items-center justify-center">
+                    <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800">{{ exam.title }}</h3>
+                    <p class="text-xs text-slate-500 mt-0.5">
+                        {{ exam.schedule.subject.name }} • Kelas {{ exam.schedule.classroom.name }} •
+                        {{ exam.date.strftime('%d/%m/%Y') }}
+                    </p>
+                </div>
+            </div>
+            <div class="flex items-center gap-2">
+                <span class="text-xs text-slate-500">{{ exam.scores|length }} nilai</span>
+                <a href="{{ url_for('guru.exam_scores', exam_id=exam.id) }}"
+                   class="px-4 py-2 text-xs font-semibold text-indigo-600 bg-indigo-50 rounded-lg hover:bg-indigo-100 transition-colors">
+                    Input / Lihat Nilai
+                </a>
+            </div>
+        </div>
+    </div>
+    {% endfor %}
+</div>
+{% else %}
+<div class="bg-white rounded-2xl border border-slate-100 p-16 text-center text-slate-400 text-sm">
+    <svg class="h-12 w-12 mx-auto mb-3 opacity-40" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2"/></svg>
+    <p class="font-medium">Belum ada ulangan.</p>
+    <p class="text-xs mt-1">Klik "Buat Ulangan Baru" untuk memulai.</p>
+</div>
+{% endif %}
+
+<!-- Add Exam Modal -->
+<div id="addExamModal" class="hidden fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm">
+    <div class="bg-white rounded-2xl shadow-2xl w-full max-w-md mx-4 p-6">
+        <h3 class="text-lg font-bold text-slate-800 mb-4">Buat Ulangan Baru</h3>
+        <form method="POST" action="{{ url_for('guru.create_exam') }}" class="space-y-4">
+            <div class="space-y-1.5">
+                <label class="text-xs font-semibold text-slate-600">Judul Ulangan *</label>
+                <input type="text" name="title" required placeholder="Contoh: Ulangan Minggu ke-1 Fiqih"
+                       class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400">
+            </div>
+            <div class="space-y-1.5">
+                <label class="text-xs font-semibold text-slate-600">Jadwal / Mata Pelajaran *</label>
+                <select name="schedule_id" required class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400">
+                    <option value="">— Pilih Jadwal —</option>
+                    {% for sch in schedules %}
+                    <option value="{{ sch.id }}">{{ sch.subject.name }} - Kelas {{ sch.classroom.name }} ({{ day_names[sch.day_of_week] }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="space-y-1.5">
+                <label class="text-xs font-semibold text-slate-600">Tanggal Ulangan *</label>
+                <input type="date" name="date" required
+                       class="w-full px-4 py-2.5 rounded-xl border border-slate-200 text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-400">
+            </div>
+            <div class="flex gap-3 pt-2">
+                <button type="submit" class="px-5 py-2.5 bg-indigo-600 text-white font-semibold rounded-xl hover:bg-indigo-700 transition-colors text-sm">Simpan</button>
+                <button type="button" onclick="document.getElementById('addExamModal').classList.add('hidden')"
+                        class="px-5 py-2.5 bg-slate-100 text-slate-600 font-semibold rounded-xl hover:bg-slate-200 transition-colors text-sm">Batal</button>
+            </div>
+        </form>
+    </div>
+</div>
+{% endblock %}

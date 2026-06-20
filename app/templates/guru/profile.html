@@ -1,0 +1,296 @@
+{% extends "base.html" %}
+{% block title %}Profil Saya - MDT Miftahul Hidayah{% endblock %}
+{% block header_title %}Profil Saya{% endblock %}
+
+{% block content %}
+<div class="max-w-3xl mx-auto px-4 py-2">
+    <!-- Form Section -->
+    <form action="{{ url_for('guru.profile') }}" method="POST" enctype="multipart/form-data" class="space-y-6">
+        <!-- Profile Header Card -->
+        <div class="bg-gradient-to-r from-indigo-600 to-indigo-800 rounded-2xl p-6 text-white shadow-lg relative overflow-hidden">
+            <div class="absolute -right-10 -bottom-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+            <div class="absolute -left-10 -top-10 w-40 h-40 bg-white/10 rounded-full blur-2xl"></div>
+            
+            <div class="relative flex flex-col md:flex-row items-center gap-6">
+                <!-- Avatar Upload Area -->
+                <div class="relative group cursor-pointer" onclick="triggerPhotoUpload()" title="Klik untuk ubah foto profil">
+                    <img id="profile-avatar" 
+                         src="{{ current_user.avatar_url }}" 
+                         class="w-24 h-24 rounded-full bg-white/20 p-1 border-2 border-white/50 shadow-md transition-all duration-300 group-hover:brightness-90 group-hover:scale-105 object-cover" 
+                         alt="Avatar">
+                    <!-- Camera Overlay Button -->
+                    <div class="absolute bottom-0 right-0 bg-indigo-600 hover:bg-indigo-700 text-white p-2 rounded-full border-2 border-white shadow-lg transition-transform duration-200 active:scale-95">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 9a2 2 0 012-2h.93a2 2 0 001.664-.89l.812-1.22A2 2 0 0110.07 4h3.86a2 2 0 011.664.89l.812 1.22A2 2 0 0018.07 7H19a2 2 0 012 2v9a2 2 0 01-2 2H5a2 2 0 01-2-2V9z"/>
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M15 13a3 3 0 11-6 0 3 3 0 016 0z"/>
+                        </svg>
+                    </div>
+                    <!-- Hidden File Input -->
+                    <input type="file" name="profile_pic" id="input-profile-pic" accept="image/*" class="hidden" onchange="previewImage(event)">
+                </div>
+
+                <div class="text-center md:text-left flex-1">
+                    <div class="flex flex-wrap items-center justify-center md:justify-start gap-2">
+                        <h2 class="text-2xl font-extrabold tracking-wide" id="profile-display-name">{{ current_user.username }}</h2>
+                        <span class="px-2.5 py-0.5 bg-white/20 text-white rounded-full text-xs font-bold uppercase tracking-wider">
+                            {{ current_user.role }}
+                        </span>
+                    </div>
+                    <p class="text-indigo-200 text-sm mt-1 font-medium">{{ current_user.email }}</p>
+                    <div class="flex flex-wrap gap-3 mt-3">
+                        {% if current_user.prayer_session %}
+                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-emerald-500/20 text-emerald-300 border border-emerald-500/30 px-2.5 py-1 rounded-lg">
+                            Sesi: {{ current_user.prayer_session }}
+                        </span>
+                        {% endif %}
+                        {% if current_user.classroom %}
+                        <span class="inline-flex items-center gap-1 text-[11px] font-semibold bg-blue-500/20 text-blue-300 border border-blue-500/30 px-2.5 py-1 rounded-lg">
+                            Kelas: {{ current_user.classroom.name }}
+                        </span>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Main Form Fields -->
+        <div class="bg-white rounded-2xl border border-slate-100 p-6 shadow-sm space-y-5">
+            <h3 class="text-base font-bold text-slate-800 border-b border-slate-100 pb-3 flex items-center gap-2">
+                <svg class="w-5 h-5 text-indigo-500" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                Informasi Umum
+            </h3>
+            
+            <!-- Nama Lengkap -->
+            <div class="space-y-1.5">
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Nama Lengkap</label>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"/></svg>
+                    </div>
+                    <input type="text" name="username" id="input-username" required 
+                           value="{{ current_user.username }}"
+                           placeholder="Masukkan nama lengkap Anda"
+                           class="w-full pl-11 pr-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                </div>
+            </div>
+
+            <!-- Email (Locked) -->
+            <div class="space-y-1.5">
+                <div class="flex justify-between items-center">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Email Google</label>
+                    <span class="text-[10px] text-emerald-600 font-extrabold flex items-center gap-1 bg-emerald-50 border border-emerald-200 px-2 py-0.5 rounded-full">
+                        <svg class="w-3 h-3" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2.5" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg> Terverifikasi
+                    </span>
+                </div>
+                <div class="relative">
+                    <div class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                        <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z"/></svg>
+                    </div>
+                    <input type="email" readonly disabled
+                           value="{{ current_user.email }}"
+                           class="w-full pl-11 pr-4 py-3 bg-slate-100 border border-slate-200 rounded-xl text-sm font-bold text-slate-400 cursor-not-allowed">
+                </div>
+                <p class="text-[10px] text-slate-400 mt-1">Alamat email terikat pada akun Google verified dan tidak dapat diubah demi keamanan.</p>
+            </div>
+
+            <!-- Pelajaran / Kitab -->
+            <div class="space-y-3">
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-wide block">Pelajaran / Kitab (Per Hari Mengajar)</label>
+                <div class="space-y-3 bg-slate-50/50 p-4 rounded-2xl border border-slate-200/60" id="subjects-container-wrapper">
+                    {% set subjects = current_user.subjects_dict %}
+                    {% for day_idx, day_name in day_names.items() %}
+                    <div id="subject-row-{{ day_idx }}" class="subject-row flex flex-col md:flex-row md:items-center gap-3 bg-white p-3 rounded-xl border border-slate-150 shadow-sm" style="display: none;">
+                        <span class="w-24 text-xs font-bold text-slate-700 bg-slate-100 border border-slate-200 px-2.5 py-1.5 rounded-lg text-center flex-shrink-0">
+                            {{ day_name }}
+                        </span>
+                        <div class="relative flex-1">
+                            <div class="absolute inset-y-0 left-0 flex items-center pl-4 text-slate-400">
+                                <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/></svg>
+                            </div>
+                            <input type="text" name="subject_book_{{ day_idx }}" 
+                                   value="{{ subjects.get(day_idx) or '' }}"
+                                   placeholder="Contoh: Kitab Jurumiah, Alfiyah, dll."
+                                   class="w-full pl-11 pr-4 py-2.5 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all">
+                        </div>
+                    </div>
+                    {% endfor %}
+                    <p id="no-days-selected-msg" class="text-xs text-slate-400 italic text-center py-2" style="display: none;">
+                        Silakan pilih Hari Aktif Mengajar di bawah terlebih dahulu untuk menentukan pelajaran per hari.
+                    </p>
+                </div>
+            </div>
+
+            <!-- Jadwal (Sesi) & Kelas Mengajar -->
+            <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Jadwal (Sesi) Mengajar *</label>
+                    <select name="prayer_session" id="prayer_session" required
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all bg-white">
+                        <option value="">— Pilih Jadwal —</option>
+                        {% for session in prayer_sessions %}
+                        <option value="{{ session }}" {{ 'selected' if current_session == session }}>{{ session }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="space-y-1.5">
+                    <label class="text-xs font-bold text-slate-500 uppercase tracking-wide">Kelas Mengajar *</label>
+                    <select name="classroom_id" id="classroom_id" required
+                            class="w-full px-4 py-3 bg-slate-50 border border-slate-200 rounded-xl text-sm font-semibold text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition-all bg-white">
+                        <option value="">— Pilih Kelas —</option>
+                        {% for cls in classrooms %}
+                        <option value="{{ cls.id }}" {{ 'selected' if current_classroom_id == cls.id }}>{{ cls.name }}</option>
+                        {% endfor %}
+                    </select>
+                </div>
+            </div>
+
+            <!-- Hari Mengajar (Multi-select pills) -->
+            <div class="space-y-2 pt-2">
+                <label class="text-xs font-bold text-slate-500 uppercase tracking-wide block">Hari Aktif Mengajar</label>
+                {% set selected_days = (current_user.teaching_days or '').split(',') %}
+                <div class="grid grid-cols-2 md:grid-cols-4 gap-2">
+                    {% for day_idx, day_name in day_names.items() %}
+                    <label class="cursor-pointer select-none">
+                        <input type="checkbox" name="teaching_days" value="{{ day_idx }}" class="sr-only peer"
+                               {% if day_idx|string in selected_days %}checked{% endif %}>
+                        <div class="flex items-center justify-center p-2.5 rounded-xl border border-slate-200 bg-slate-50/50 text-xs font-bold text-slate-600 transition-all duration-200 hover:border-slate-300 peer-checked:border-indigo-500 peer-checked:bg-indigo-500/10 peer-checked:text-indigo-600">
+                            {{ day_name }}
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+                <p class="text-[10px] text-slate-400">Silakan pilih hari-hari di mana Anda aktif mengajar di madrasah ini.</p>
+            </div>
+            
+            <!-- Submit Button inside General Info Bottom -->
+            <div class="pt-4 border-t border-slate-100 flex justify-end">
+                <button type="submit" 
+                        class="px-6 py-3 bg-indigo-600 hover:bg-indigo-700 text-white font-bold rounded-xl shadow-md shadow-indigo-600/10 hover:shadow-lg hover:shadow-indigo-600/20 active:scale-[0.98] transition-all text-sm flex items-center gap-2">
+                    <svg class="w-4 h-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M8 7H5a2 2 0 00-2 2v9a2 2 0 002 2h14a2 2 0 002-2V9a2 2 0 00-2-2h-3m-1 4l-3 3m0 0l-3-3m3 3V4"/></svg>
+                    Simpan Perubahan
+                </button>
+            </div>
+        </div>
+    </form>
+</div>
+
+<script>
+// Dynamic classroom filtering based on chosen prayer session
+function updateClassrooms() {
+    const sessionSelect = document.getElementById('prayer_session');
+    const classSelect = document.getElementById('classroom_id');
+    
+    if (!sessionSelect || !classSelect) return;
+    
+    const selectedSession = sessionSelect.value;
+    const sessionClassrooms = {{ session_classrooms | tojson | safe }};
+    const currentSelected = classSelect.value || "{{ current_classroom_id if current_classroom_id else '' }}";
+
+    // Clear class options
+    classSelect.innerHTML = '<option value="">— Pilih Kelas —</option>';
+    
+    // Fallback to all classes flat array
+    const allClassrooms = [];
+    Object.keys(sessionClassrooms).forEach(function(k) {
+        if (sessionClassrooms[k]) {
+            sessionClassrooms[k].forEach(function(c) {
+                allClassrooms.push(c);
+            });
+        }
+    });
+
+    const classList = (selectedSession && sessionClassrooms[selectedSession])
+        ? sessionClassrooms[selectedSession]
+        : allClassrooms;
+
+    let matched = false;
+    classList.forEach(function(cls) {
+        const opt = document.createElement('option');
+        opt.value = cls.id;
+        opt.textContent = cls.name;
+        if (String(cls.id) === String(currentSelected)) {
+            opt.selected = true;
+            matched = true;
+        }
+        classSelect.appendChild(opt);
+    });
+
+    if (selectedSession && !matched) {
+        classSelect.value = "";
+    }
+}
+
+// Click avatar to trigger file input
+function triggerPhotoUpload() {
+    document.getElementById('input-profile-pic').click();
+}
+
+// Live image previewer
+function previewImage(event) {
+    const reader = new FileReader();
+    reader.onload = function() {
+        const output = document.getElementById('profile-avatar');
+        output.src = reader.result;
+    }
+    if (event.target.files[0]) {
+        reader.readAsDataURL(event.target.files[0]);
+    }
+}
+
+// Live username update to display name
+const inputUsername = document.getElementById('input-username');
+const profileDisplayName = document.getElementById('profile-display-name');
+
+if (inputUsername && profileDisplayName) {
+    inputUsername.addEventListener('input', function() {
+        profileDisplayName.textContent = inputUsername.value.trim() || 'Profil';
+    });
+}
+
+document.addEventListener('DOMContentLoaded', function() {
+    const sessionSelect = document.getElementById('prayer_session');
+    if (sessionSelect) {
+        sessionSelect.addEventListener('change', updateClassrooms);
+    }
+    
+    // Initial call to setup correct state
+    setTimeout(updateClassrooms, 100);
+
+    // Sync subject/book input rows based on checked days
+    function syncSubjectRows() {
+        const checkboxes = document.querySelectorAll('input[name="teaching_days"]');
+        let visibleCount = 0;
+        
+        checkboxes.forEach(cb => {
+            const dayIdx = cb.value;
+            const row = document.getElementById(`subject-row-${dayIdx}`);
+            if (!row) return;
+            
+            const input = row.querySelector(`input[name="subject_book_${dayIdx}"]`);
+            
+            if (cb.checked) {
+                row.style.display = 'flex';
+                if (input) input.setAttribute('required', 'required');
+                visibleCount++;
+            } else {
+                row.style.display = 'none';
+                if (input) input.removeAttribute('required');
+            }
+        });
+        
+        const msg = document.getElementById('no-days-selected-msg');
+        if (msg) {
+            msg.style.display = visibleCount === 0 ? 'block' : 'none';
+        }
+    }
+
+    // Add event listeners to checkboxes
+    document.querySelectorAll('input[name="teaching_days"]').forEach(cb => {
+        cb.addEventListener('change', syncSubjectRows);
+    });
+
+    // Trigger on initial load
+    syncSubjectRows();
+});
+</script>
+{% endblock %}

@@ -1,0 +1,175 @@
+{% extends "base.html" %}
+{% block title %}Peringkat Santri - MDT Miftahul Hidayah{% endblock %}
+{% block header_title %}Peringkat Santri{% endblock %}
+
+{% block content %}
+<!-- Info Formula -->
+<div class="bg-gradient-to-r from-amber-500 to-orange-500 rounded-2xl p-5 text-white mb-6 shadow-md">
+    <h2 class="text-lg font-bold">Perhitungan Nilai Akhir</h2>
+    <p class="text-amber-100 text-sm mt-1">
+        <strong>Absensi (70%)</strong> × Persentase Kehadiran + <strong>Ujian (30%)</strong> × Rata-rata Nilai Ulangan = <strong>Nilai Akhir</strong>
+    </p>
+</div>
+
+<!-- Filter -->
+<div class="bg-white rounded-2xl shadow-sm border border-slate-100 p-5 mb-6">
+    <form method="GET" class="flex flex-wrap gap-4 items-end">
+        <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-slate-600">Jadwal Ngaji</label>
+            <select name="prayer_session" id="prayer_session_select" class="px-4 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:border-indigo-400">
+                <option value="">Semua Jadwal</option>
+                {% for session in prayer_sessions %}
+                <option value="{{ session }}" {{ 'selected' if selected_session == session }}>{{ session }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="space-y-1.5">
+            <label class="text-xs font-semibold text-slate-600">Kelas</label>
+            <select name="classroom_id" id="classroom_select" class="px-4 py-2 rounded-xl border border-slate-200 text-sm bg-white focus:outline-none focus:border-indigo-400">
+                <option value="">Semua Kelas</option>
+                {% for cls in classrooms %}
+                <option value="{{ cls.id }}" {{ 'selected' if selected_classroom == cls.id }}>{{ cls.name }}</option>
+                {% endfor %}
+            </select>
+        </div>
+        <button type="submit" class="px-5 py-2 bg-indigo-600 hover:bg-indigo-700 text-white font-semibold rounded-xl text-sm transition-colors">
+            Tampilkan
+        </button>
+    </form>
+</div>
+
+<!-- Table -->
+<div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+            <thead class="bg-slate-50 text-slate-600">
+                <tr>
+                    <th class="px-5 py-3 font-semibold text-center w-20">Peringkat</th>
+                    <th class="px-5 py-3 font-semibold">Nama Santri</th>
+                    <th class="px-5 py-3 font-semibold text-center">Persentase Absen</th>
+                    <th class="px-5 py-3 font-semibold text-center">Skor Absen (70%)</th>
+                    <th class="px-5 py-3 font-semibold text-center">Rata² Ujian</th>
+                    <th class="px-5 py-3 font-semibold text-center">Skor Ujian (30%)</th>
+                    <th class="px-5 py-3 font-semibold text-center">Nilai Akhir</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+                {% for item in rankings %}
+                <tr class="hover:bg-slate-50 transition-colors {{ 'bg-amber-50/50' if loop.index <= 3 }}">
+                    <td class="px-5 py-3.5 text-center">
+                        {% if loop.index == 1 %}
+                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-yellow-400 text-white font-extrabold text-sm shadow">1</span>
+                        {% elif loop.index == 2 %}
+                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-slate-300 text-white font-extrabold text-sm shadow">2</span>
+                        {% elif loop.index == 3 %}
+                        <span class="inline-flex items-center justify-center w-8 h-8 rounded-full bg-amber-600 text-white font-extrabold text-sm shadow">3</span>
+                        {% else %}
+                        <span class="text-slate-500 font-bold">{{ loop.index }}</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-5 py-3.5">
+                        <div class="flex items-center gap-2">
+                            <div class="w-7 h-7 rounded-full flex items-center justify-center text-[10px] font-bold text-white
+                                {{ 'bg-blue-500' if item.gender == 'L' else 'bg-pink-500' }}">
+                                {{ item.name[0] }}
+                            </div>
+                            <span class="font-semibold text-slate-800">{{ item.name }}</span>
+                        </div>
+                    </td>
+                    <td class="px-5 py-3.5 text-slate-600">{{ item.classroom }}</td>
+                    <td class="px-5 py-3.5 text-center">
+                        <div class="flex items-center gap-2 justify-center">
+                            <div class="w-14 h-2 rounded-full bg-slate-100 overflow-hidden">
+                                <div class="h-full rounded-full bg-emerald-500" style="width: {{ item.attendance_pct }}%"></div>
+                            </div>
+                            <span class="text-xs font-semibold">{{ '%.1f' % item.attendance_pct }}%</span>
+                        </div>
+                    </td>
+                    <td class="px-5 py-3.5 text-center font-semibold text-emerald-600">{{ '%.1f' % item.attendance_score }}</td>
+                    <td class="px-5 py-3.5 text-center">
+                        <span class="text-xs font-semibold">{{ '%.1f' % item.exam_avg }}</span>
+                    </td>
+                    <td class="px-5 py-3.5 text-center font-semibold text-violet-600">{{ '%.1f' % item.exam_score }}</td>
+                    <td class="px-5 py-3.5 text-center">
+                        <span class="inline-flex items-center px-3 py-1 rounded-full text-sm font-bold
+                            {{ 'bg-emerald-100 text-emerald-700' if item.final_score >= 75
+                               else 'bg-amber-100 text-amber-700' if item.final_score >= 50
+                               else 'bg-red-100 text-red-700' }}">
+                            {{ '%.1f' % item.final_score }}
+                        </span>
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="8" class="px-5 py-12 text-center text-slate-400 text-sm">
+                        Belum ada data. Pastikan sudah ada data absensi dan nilai ulangan.
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+
+<script>
+    (function() {
+        function init() {
+            const sessionClassrooms = {
+                {% for session, cls_list in session_classrooms.items() %}
+                    "{{ session }}": [
+                        {% for c in cls_list %}
+                            { id: {{ c.id }}, name: "{{ c.name }}" },
+                        {% endfor %}
+                    ],
+                {% endfor %}
+            };
+
+            const allClassrooms = [
+                {% for cls in classrooms %}
+                    { id: {{ cls.id }}, name: "{{ cls.name }}" },
+                {% endfor %}
+            ];
+
+            const sessionSelect = document.getElementById('prayer_session_select');
+            const classroomSelect = document.getElementById('classroom_select');
+            const selectedClsId = "{{ selected_classroom or '' }}";
+
+            if (!sessionSelect || !classroomSelect) {
+                return;
+            }
+
+            function updateClassrooms() {
+                const selectedSession = sessionSelect.value;
+                let availableClasses = [];
+
+                if (selectedSession && sessionClassrooms[selectedSession]) {
+                    availableClasses = sessionClassrooms[selectedSession];
+                } else {
+                    availableClasses = allClassrooms;
+                }
+
+                classroomSelect.innerHTML = '<option value="">Semua Kelas</option>';
+
+                availableClasses.forEach(cls => {
+                    const opt = document.createElement('option');
+                    opt.value = cls.id;
+                    opt.textContent = cls.name;
+                    if (cls.id.toString() === selectedClsId) {
+                        opt.selected = true;
+                    }
+                    classroomSelect.appendChild(opt);
+                });
+            }
+
+            updateClassrooms();
+            sessionSelect.addEventListener('change', updateClassrooms);
+        }
+
+        if (document.readyState !== 'loading') {
+            init();
+        } else {
+            document.addEventListener('DOMContentLoaded', init);
+        }
+    })();
+</script>
+{% endblock %}

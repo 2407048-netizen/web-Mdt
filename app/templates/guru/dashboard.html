@@ -1,0 +1,110 @@
+{% extends "base.html" %}
+{% block title %}Dashboard Guru - MDT Miftahul Hidayah{% endblock %}
+{% block header_title %}Jadwal Mengajar Saya{% endblock %}
+
+{% block content %}
+<!-- Greeting -->
+<div class="bg-gradient-to-r from-emerald-600 to-teal-600 rounded-2xl p-6 text-white mb-6 shadow-md">
+    <p class="text-emerald-100 text-sm font-medium">{{ today.strftime('%A, %d %B %Y') }} • {{ day_name }}</p>
+    <h2 class="text-2xl font-bold mt-1">Assalamu'alaikum, {{ current_user.username }}!</h2>
+    <p class="text-emerald-100 text-sm mt-1">Berikut adalah jadwal mengajar Anda hari ini. Klik untuk mulai mengisi absensi murid.</p>
+</div>
+
+<!-- Jadwal Ngaji -->
+<div class="grid grid-cols-2 md:grid-cols-4 gap-3 mb-6">
+    {% set sessions = [
+        ('Subuh',  'bg-blue-500',   'from-blue-500 to-blue-600',   '', '04:30 - 06:00'),
+        ('Dzuhur', 'bg-yellow-500', 'from-yellow-500 to-amber-500','',  '12:00 - 13:30'),
+        ('Ashar',  'bg-orange-500', 'from-orange-500 to-red-400',  '', '15:30 - 17:00'),
+        ('Magrib', 'bg-purple-600', 'from-purple-600 to-violet-600','','18:00 - 19:30'),
+    ] %}
+    {% for session_name, color, gradient, icon, waktu in sessions %}
+    {% set count = session_counts.get(session_name, 0) %}
+    <div class="bg-white rounded-xl border {{ 'border-indigo-200 shadow-md' if count > 0 else 'border-slate-100' }} p-4 shadow-sm">
+        <div class="flex items-center justify-between mb-2">
+            <div class="w-9 h-9 rounded-xl {{ color }} flex items-center justify-center text-white font-bold text-xs">
+                {{ session_name[:3] }}
+            </div>
+            <span class="text-2xl font-black {{ 'text-indigo-600' if count > 0 else 'text-slate-300' }}">{{ count }}</span>
+        </div>
+        <p class="font-semibold text-slate-700 text-sm">Jadwal Ngaji {{ session_name }}</p>
+        <p class="text-xs text-slate-400 mt-0.5">{{ waktu }} • <span class="{{ 'text-indigo-500 font-medium' if count > 0 else '' }}">{{ count }} kelas</span></p>
+    </div>
+    {% endfor %}
+</div>
+
+{% if today_schedules %}
+<!-- Schedule Cards -->
+<div class="grid grid-cols-1 md:grid-cols-2 gap-5">
+    {% for sch in today_schedules %}
+    {% set done = schedule_status.get(sch.id, False) %}
+    <div class="bg-white rounded-2xl shadow-sm border {{ 'border-emerald-300 bg-emerald-50/30' if done else 'border-slate-100' }} overflow-hidden hover:shadow-md transition-shadow">
+        <!-- Card Header -->
+        <div class="p-5 flex justify-between items-start">
+            <div class="flex items-start gap-4">
+                <!-- Sesi Icon -->
+                <div class="w-12 h-12 rounded-xl flex items-center justify-center text-white font-bold text-sm
+                    {% if sch.prayer_session == 'Subuh' %}bg-blue-500
+                    {% elif sch.prayer_session == 'Dzuhur' %}bg-yellow-500
+                    {% elif sch.prayer_session == 'Ashar' %}bg-orange-500
+                    {% else %}bg-purple-600{% endif %}">
+                    {{ sch.prayer_session[:3] }}
+                </div>
+                <div>
+                    <h3 class="font-bold text-slate-800">{{ sch.subject.name }}</h3>
+                    <p class="text-sm text-slate-500 mt-0.5">
+                        Kelas <strong>{{ sch.classroom.name }}</strong> •
+                        Sesi <strong>{{ sch.prayer_session }}</strong>
+                    </p>
+                </div>
+            </div>
+            <!-- Status Badge -->
+            <span class="inline-flex items-center gap-1.5 px-3 py-1 rounded-full text-xs font-semibold
+                {{ 'bg-emerald-100 text-emerald-700' if done else 'bg-amber-100 text-amber-700' }}">
+                <span class="w-1.5 h-1.5 rounded-full {{ 'bg-emerald-500' if done else 'bg-amber-500' }}"></span>
+                {{ 'Sudah Diisi' if done else 'Belum Diisi' }}
+            </span>
+        </div>
+        <!-- Card Footer -->
+        <div class="px-5 pb-5">
+            {% if done %}
+            <div class="flex gap-2">
+                <a href="{{ url_for('guru.attendance', schedule_id=sch.id) }}"
+                   class="flex-1 text-center px-4 py-2 border border-emerald-300 text-emerald-700 font-medium text-sm rounded-xl hover:bg-emerald-50 transition-colors">
+                    Lihat / Ubah Absensi
+                </a>
+            </div>
+            {% else %}
+            <a href="{{ url_for('guru.attendance', schedule_id=sch.id) }}"
+               class="flex items-center justify-center gap-2 w-full px-4 py-2.5 bg-emerald-600 text-white font-semibold text-sm rounded-xl hover:bg-emerald-700 transition-colors shadow-sm">
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-6 9l2 2 4-4"/></svg>
+                Isi Absensi Sekarang
+            </a>
+            {% endif %}
+        </div>
+    </div>
+    {% endfor %}
+</div>
+
+{% else %}
+<!-- Empty State -->
+<div class="bg-white rounded-2xl border border-slate-100 shadow-sm p-16 text-center">
+    <div class="w-20 h-20 bg-slate-50 rounded-full flex items-center justify-center mx-auto mb-4">
+        <svg class="h-10 w-10 text-slate-300" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M8 7V3m8 4V3m-9 8h10M5 21h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2z"/></svg>
+    </div>
+    <h3 class="text-lg font-bold text-slate-700">Tidak ada jadwal hari ini</h3>
+    <p class="text-sm text-slate-400 mt-1">Anda tidak memiliki kelas yang dijadwalkan pada hari {{ day_name }} ini.</p>
+</div>
+{% endif %}
+
+<!-- Menu Pendukung -->
+<div class="mt-8">
+    <a href="{{ url_for('guru.mutabaah') }}"
+       class="bg-white rounded-xl p-4 border border-slate-100 hover:border-emerald-200 hover:shadow-sm transition-all flex items-center gap-3 max-w-xs">
+        <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center">
+            <svg class="h-5 w-5" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5H7a2 2 0 00-2 2v12a2 2 0 002 2h10a2 2 0 002-2V7a2 2 0 00-2-2h-2M9 5a2 2 0 002 2h2a2 2 0 002-2M9 5a2 2 0 012-2h2a2 2 0 012 2m-3 7h3m-3 4h3m-6-4h.01M9 16h.01"/></svg>
+        </div>
+        <span class="font-semibold text-sm text-slate-700">Mutaba'ah</span>
+    </a>
+</div>
+{% endblock %}

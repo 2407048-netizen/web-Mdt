@@ -1,0 +1,130 @@
+{% extends "base.html" %}
+{% block title %}Kelola Akun Guru - Admin{% endblock %}
+{% block header_title %}Kelola Akun Guru{% endblock %}
+
+{% block content %}
+<!-- Stats -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-5 mb-8">
+    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-amber-100 flex items-center justify-center text-amber-600">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M12 8v4l3 3m6-3a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div>
+            <p class="text-sm text-slate-500 font-medium">Menunggu Aktivasi</p>
+            <h3 class="text-2xl font-bold text-slate-800">{{ stats.pending }}</h3>
+        </div>
+    </div>
+    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-emerald-100 flex items-center justify-center text-emerald-600">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z"/></svg>
+        </div>
+        <div>
+            <p class="text-sm text-slate-500 font-medium">Aktif</p>
+            <h3 class="text-2xl font-bold text-slate-800">{{ stats.active }}</h3>
+        </div>
+    </div>
+    <div class="bg-white rounded-2xl p-5 shadow-sm border border-slate-100 flex items-center gap-4">
+        <div class="w-12 h-12 rounded-xl bg-slate-100 flex items-center justify-center text-slate-500">
+            <svg class="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M17 20h5v-2a3 3 0 00-5.356-1.857M17 20H7m10 0v-2c0-.656-.126-1.283-.356-1.857M7 20H2v-2a3 3 0 015.356-1.857M7 20v-2c0-.656.126-1.283.356-1.857m0 0a5.002 5.002 0 019.288 0M15 7a3 3 0 11-6 0 3 3 0 016 0z"/></svg>
+        </div>
+        <div>
+            <p class="text-sm text-slate-500 font-medium">Total Guru</p>
+            <h3 class="text-2xl font-bold text-slate-800">{{ stats.total }}</h3>
+        </div>
+    </div>
+</div>
+
+<!-- Table -->
+<div class="bg-white rounded-2xl shadow-sm border border-slate-100 overflow-hidden">
+    <div class="p-5 border-b border-slate-100 flex flex-col md:flex-row md:items-center md:justify-between gap-3">
+        <h3 class="font-bold text-slate-800">Daftar Akun Guru</h3>
+        <div class="flex gap-2">
+            <a href="{{ url_for('admin.registrations') }}" class="px-3 py-1.5 rounded-lg text-xs font-semibold {% if not status_filter %}bg-indigo-100 text-indigo-700{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %} transition-colors">Semua</a>
+            <a href="{{ url_for('admin.registrations', status='pending') }}" class="px-3 py-1.5 rounded-lg text-xs font-semibold {% if status_filter == 'pending' %}bg-amber-100 text-amber-700{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %} transition-colors">Pending</a>
+            <a href="{{ url_for('admin.registrations', status='active') }}" class="px-3 py-1.5 rounded-lg text-xs font-semibold {% if status_filter == 'active' %}bg-emerald-100 text-emerald-700{% else %}bg-slate-100 text-slate-600 hover:bg-slate-200{% endif %} transition-colors">Aktif</a>
+        </div>
+    </div>
+
+    <div class="overflow-x-auto">
+        <table class="w-full text-sm text-left">
+            <thead class="bg-slate-50 text-slate-600">
+                <tr>
+                    <th class="px-5 py-3 font-semibold">Nama</th>
+                    <th class="px-5 py-3 font-semibold">Email</th>
+                    <th class="px-5 py-3 font-semibold">Jadwal & Kelas</th>
+                    <th class="px-5 py-3 font-semibold">Tgl Daftar</th>
+                    <th class="px-5 py-3 font-semibold">Status</th>
+                    <th class="px-5 py-3 font-semibold text-center">Aksi</th>
+                </tr>
+            </thead>
+            <tbody class="divide-y divide-slate-50">
+                {% for guru in teachers %}
+                <tr class="hover:bg-slate-50 transition-colors">
+                    <td class="px-5 py-3.5">
+                        <div class="flex items-center gap-3">
+                            <img src="https://api.dicebear.com/7.x/avataaars/svg?seed={{ guru.username }}"
+                                 class="w-8 h-8 rounded-full bg-slate-100" alt="">
+                            <span class="font-semibold text-slate-800">{{ guru.username }}</span>
+                        </div>
+                    </td>
+                    <td class="px-5 py-3.5 text-slate-600">{{ guru.email }}</td>
+                    <td class="px-5 py-3.5">
+                        {% if guru.prayer_session or guru.classroom %}
+                        <div class="flex flex-col">
+                            <span class="font-semibold text-indigo-600 text-xs">{{ guru.prayer_session or '-' }}</span>
+                            <span class="text-xs text-slate-500">Kelas {{ guru.classroom.name if guru.classroom else '-' }}</span>
+                            {% if guru.teaching_days %}
+                            <span class="text-[10px] text-amber-700 bg-amber-50 rounded px-1.5 py-0.5 mt-1 w-fit font-semibold border border-amber-100/50">
+                                Hari: {{ guru.formatted_teaching_days }}
+                            </span>
+                            {% endif %}
+                            {% if guru.subject_book %}
+                            <span class="text-[10px] text-teal-700 bg-teal-50 rounded px-1.5 py-0.5 mt-1 w-fit font-semibold border border-teal-100/50">
+                                Kitab/Pelajaran: {{ guru.formatted_subject_book }}
+                            </span>
+                            {% endif %}
+                        </div>
+                        {% else %}
+                        <span class="text-slate-400 text-xs">-</span>
+                        {% endif %}
+                    </td>
+                    <td class="px-5 py-3.5 text-slate-500 text-xs">{{ guru.created_at.strftime('%d/%m/%Y %H:%M') }}</td>
+                    <td class="px-5 py-3.5">
+                        {% if guru.is_active %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-emerald-100 text-emerald-700">
+                            <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Aktif
+                        </span>
+                        {% else %}
+                        <span class="inline-flex items-center gap-1 px-2.5 py-1 rounded-full text-xs font-semibold bg-amber-100 text-amber-700">
+                            <span class="w-1.5 h-1.5 rounded-full bg-amber-500"></span> Pending
+                        </span>
+                        {% endif %}
+                    </td>
+                    <td class="px-5 py-3.5 text-center">
+                        {% if not guru.is_active %}
+                        <form method="POST" action="{{ url_for('admin.toggle_guru', id=guru.id) }}" class="inline">
+                            <input type="hidden" name="action" value="activate">
+                            <button type="submit" title="Aktivasi" class="p-1.5 rounded-lg bg-emerald-50 text-emerald-600 hover:bg-emerald-100 transition-colors">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"/></svg>
+                            </button>
+                        </form>
+                        {% else %}
+                        <form method="POST" action="{{ url_for('admin.toggle_guru', id=guru.id) }}" class="inline">
+                            <input type="hidden" name="action" value="deactivate">
+                            <button type="submit" title="Nonaktifkan" class="p-1.5 rounded-lg bg-red-50 text-red-600 hover:bg-red-100 transition-colors">
+                                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M18.364 18.364A9 9 0 005.636 5.636m12.728 12.728A9 9 0 015.636 5.636m12.728 12.728L5.636 5.636"/></svg>
+                            </button>
+                        </form>
+                        {% endif %}
+                    </td>
+                </tr>
+                {% else %}
+                <tr>
+                    <td colspan="5" class="px-5 py-12 text-center text-slate-400 text-sm">Belum ada akun guru terdaftar.</td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</div>
+{% endblock %}

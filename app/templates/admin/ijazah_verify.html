@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Verifikasi Ijazah - {{ student.name }}</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+
+        .verify-card {
+            background: white;
+            border-radius: 20px;
+            padding: 40px;
+            max-width: 600px;
+            width: 100%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+            text-align: center;
+        }
+
+        /* HAPUS background dan color dari sini, akan pakai inline style di HTML */
+        .status-icon {
+            width: 80px;
+            height: 80px;
+            margin: 0 auto 20px;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 40px;
+            color: white;
+        }
+
+        .subtitle {
+            color: #6b7280;
+            margin-bottom: 30px;
+            font-size: 14px;
+        }
+
+        .data-box {
+            background: #f9fafb;
+            border-radius: 12px;
+            padding: 20px;
+            text-align: left;
+            margin-bottom: 20px;
+        }
+
+        .data-row {
+            display: flex;
+            justify-content: space-between;
+            padding: 10px 0;
+            border-bottom: 1px solid #e5e7eb;
+        }
+
+        .data-row:last-child {
+            border-bottom: none;
+        }
+
+        .data-label {
+            font-weight: 600;
+            color: #4b5563;
+        }
+
+        .data-value {
+            color: #111827;
+            font-weight: 500;
+        }
+
+        .timestamp {
+            margin-top: 20px;
+            padding-top: 20px;
+            border-top: 2px solid #e5e7eb;
+            font-size: 12px;
+            color: #9ca3af;
+        }
+    </style>
+</head>
+
+<body>
+    <div class="verify-card">
+        <!-- PERBAIKAN: Gunakan inline style untuk background icon -->
+        <div class="status-icon" style="background: {{ '#10b981' if verified else '#ef4444' }};">
+            {{ '✓' if verified else '✕' }}
+        </div>
+
+        <!-- PERBAIKAN: Gunakan inline style untuk warna judul -->
+        <h1 style="color: {{ '#10b981' if verified else '#ef4444' }}; margin: 0 0 10px 0; font-size: 28px;">
+            {{ 'IJAZAH VALID' if verified else 'IJAZAH TIDAK VALID' }}
+        </h1>
+
+        <p class="subtitle">
+            {{ 'Data ijazah ini terdaftar dan sah dalam sistem kami.' if verified else 'Data ijazah ini tidak ditemukan
+            dalam sistem.' }}
+        </p>
+
+        {% if verified %}
+        <div class="data-box">
+            <div class="data-row">
+                <span class="data-label">Nama:</span>
+                <span class="data-value">{{ student.name }}</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">NIS:</span>
+                <span class="data-value">{{ student.nis }}</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Kelas:</span>
+                <span class="data-value">{{ classroom.name if classroom else '-' }}</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Tahun Ajaran:</span>
+                <span class="data-value">{{ academic_year.name if academic_year else '-' }}</span>
+            </div>
+            <div class="data-row">
+                <span class="data-label">Status:</span>
+                <span class="data-value" style="color: #10b981; font-weight: bold;">LULUS</span>
+            </div>
+        </div>
+
+        <div class="timestamp">
+            <p>Verifikasi dilakukan pada: {{ verified_at.strftime('%d %B %Y, %H:%M:%S') }}</p>
+            <p>Sistem Informasi MDT Miftahul Hidayah</p>
+        </div>
+        {% endif %}
+    </div>
+</body>
+
+</html>

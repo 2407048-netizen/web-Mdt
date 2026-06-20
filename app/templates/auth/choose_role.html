@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Masuk - MDT Miftahul Hidayah</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+      tailwind.config = {
+        theme: {
+          extend: {
+            fontFamily: {
+              sans: ['"Plus Jakarta Sans"', 'sans-serif'],
+              serif: ['"Playfair Display"', 'serif'],
+            },
+            colors: {
+              indigo: {
+                50: '#f0fdf4',
+                100: '#dcfce7',
+                200: '#bbf7d0',
+                300: '#86efac',
+                400: '#4ade80',
+                500: '#10b981', // emerald-500
+                600: '#059669', // emerald-600 (classic green)
+                700: '#047857', // emerald-700
+                800: '#065f46',
+                900: '#064e3b',
+                950: '#022c22',
+              },
+              amber: {
+                50: '#fefbeb',
+                100: '#fef3c7',
+                200: '#fde68a',
+                300: '#fcd34d',
+                400: '#fbbf24',
+                500: '#d97706', // gold-500
+                600: '#b45309', // gold-600
+                700: '#78350f',
+                800: '#92400e',
+                900: '#78350f',
+              }
+            }
+          }
+        }
+      }
+    </script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@300;400;500;600;700;800&family=Playfair+Display:ital,wght@0,600;0,700;1,400&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Plus Jakarta Sans', sans-serif; }
+        h1, h2, h3, h4, .font-serif { font-family: 'Playfair Display', serif; }
+        .bg-pattern {
+            background-color: #031409;
+            background-image: radial-gradient(ellipse at 20% 50%, rgba(16,185,129,0.15) 0%, transparent 60%),
+                              radial-gradient(ellipse at 80% 20%, rgba(245,158,11,0.1) 0%, transparent 50%);
+        }
+        .card-hover {
+            transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+        }
+        .card-hover:hover {
+            transform: translateY(-6px);
+        }
+        .glow-green { box-shadow: 0 0 40px rgba(16,185,129,0.15); }
+        .glow-indigo { box-shadow: 0 0 40px rgba(245,158,11,0.15); }
+        .card-hover:hover.glow-green { box-shadow: 0 20px 60px rgba(16,185,129,0.25); }
+        .card-hover:hover.glow-indigo { box-shadow: 0 20px 60px rgba(245,158,11,0.25); }
+    </style>
+</head>
+<body class="bg-pattern min-h-screen flex flex-col items-center justify-center p-6">
+
+    <!-- Logo & Branding -->
+    <div class="text-center mb-12">
+        <div class="w-20 h-20 rounded-2xl bg-white/10 backdrop-blur border border-white/20 flex items-center justify-center mx-auto mb-5 shadow-lg">
+            <img src="/static/logo.png" alt="Logo MDT" class="w-14 h-14 object-contain">
+        </div>
+        <h1 class="text-3xl font-bold text-white tracking-tight">MDT Miftahul Hidayah</h1>
+        <p class="text-slate-400 mt-2 text-sm font-medium">Sistem Informasi Manajemen Madrasah Terpadu</p>
+    </div>
+
+    <!-- Role Selector Cards -->
+    <div class="w-full max-w-2xl grid grid-cols-1 md:grid-cols-2 gap-6 mb-10">
+
+        <!-- Guru Card -->
+        <a href="{{ url_for('auth.guru_login') }}"
+           class="card-hover glow-green group relative bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-8 flex flex-col items-center text-center cursor-pointer overflow-hidden">
+            <!-- Background accent -->
+            <div class="absolute inset-0 bg-gradient-to-br from-emerald-500/10 to-teal-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div class="relative z-10">
+                <!-- Icon -->
+                <div class="w-20 h-20 rounded-2xl bg-emerald-500/20 border border-emerald-500/30 flex items-center justify-center mb-5 mx-auto group-hover:bg-emerald-500/30 transition-colors">
+                    <svg class="h-10 w-10 text-emerald-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M12 6.253v13m0-13C10.832 5.477 9.246 5 7.5 5S4.168 5.477 3 6.253v13C4.168 18.477 5.754 18 7.5 18s3.332.477 4.5 1.253m0-13C13.168 5.477 14.754 5 16.5 5c1.747 0 3.332.477 4.5 1.253v13C19.832 18.477 18.247 18 16.5 18c-1.746 0-3.332.477-4.5 1.253"/>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold text-white mb-2">Guru / Ustadz</h2>
+                <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                    Absensi murid, jurnal mengajar,<br>dan mutaba'ah hafalan santri.
+                </p>
+                <div class="flex items-center gap-2 text-emerald-400 font-semibold text-sm group-hover:gap-3 transition-all">
+                    Masuk sebagai Guru
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </div>
+            </div>
+        </a>
+
+        <!-- Admin Card -->
+        <a href="{{ url_for('auth.admin_login') }}"
+           class="card-hover glow-indigo group relative bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-8 flex flex-col items-center text-center cursor-pointer overflow-hidden">
+            <div class="absolute inset-0 bg-gradient-to-br from-indigo-500/10 to-purple-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div class="relative z-10">
+                <div class="w-20 h-20 rounded-2xl bg-indigo-500/20 border border-indigo-500/30 flex items-center justify-center mb-5 mx-auto group-hover:bg-indigo-500/30 transition-colors">
+                    <svg class="h-10 w-10 text-indigo-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M9 12l2 2 4-4m5.618-4.016A11.955 11.955 0 0112 2.944a11.955 11.955 0 01-8.618 3.04A12.02 12.02 0 003 9c0 5.591 3.824 10.29 9 11.622 5.176-1.332 9-6.03 9-11.622 0-1.042-.133-2.052-.382-3.016z"/>
+                    </svg>
+                </div>
+                <h2 class="text-xl font-bold text-white mb-2">Admin / Tata Usaha</h2>
+                <p class="text-slate-400 text-sm leading-relaxed mb-6">
+                    Kelola jadwal, data santri,<br>keuangan SPP & laporan arus kas.
+                </p>
+                <div class="flex items-center gap-2 text-indigo-400 font-semibold text-sm group-hover:gap-3 transition-all">
+                    Masuk sebagai Admin
+                    <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+                </div>
+            </div>
+        </a>
+    </div>
+
+    <!-- Daftar Button -->
+    <div class="w-full max-w-2xl mb-10">
+        <a href="{{ url_for('auth.register') }}"
+           class="card-hover group relative bg-white/5 backdrop-blur-md border border-white/10 rounded-3xl p-6 flex items-center gap-5 cursor-pointer overflow-hidden" style="box-shadow: 0 0 40px rgba(245,158,11,0.15);">
+            <div class="absolute inset-0 bg-gradient-to-r from-amber-500/10 to-orange-500/5 opacity-0 group-hover:opacity-100 transition-opacity duration-300"></div>
+            <div class="relative z-10 w-14 h-14 rounded-2xl bg-amber-500/20 border border-amber-500/30 flex items-center justify-center flex-shrink-0 group-hover:bg-amber-500/30 transition-colors">
+                <svg class="h-7 w-7 text-amber-400" fill="none" viewBox="0 0 24 24" stroke="currentColor">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="1.5" d="M18 9v3m0 0v3m0-3h3m-3 0h-3m-2-5a4 4 0 11-8 0 4 4 0 018 0zM3 20a6 6 0 0112 0v1H3v-1z"/>
+                </svg>
+            </div>
+            <div class="relative z-10 flex-1">
+                <h2 class="text-lg font-bold text-white">Daftar Akun Guru</h2>
+                <p class="text-slate-400 text-sm">Buat akun baru untuk Guru / Ustadz / Ustadzah.</p>
+            </div>
+            <div class="relative z-10 flex items-center gap-2 text-amber-400 font-semibold text-sm group-hover:gap-3 transition-all">
+                Daftar
+                <svg class="h-4 w-4" fill="none" viewBox="0 0 24 24" stroke="currentColor"><path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 5l7 7-7 7"/></svg>
+            </div>
+        </a>
+    </div>
+
+    <!-- Footer -->
+    <p class="text-slate-600 text-xs text-center">
+        &copy; {{ now.year }} MDT Miftahul Hidayah. Sistem Informasi Madrasah Terpadu.
+    </p>
+</body>
+</html>

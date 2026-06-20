@@ -1,0 +1,381 @@
+<!DOCTYPE html>
+<html lang="id">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Ijazah - {{ student.name }}</title>
+    <style>
+        /* PENGATURAN KERTAS A4 PORTRAIT */
+        @page {
+            size: A4 portrait;
+            margin: 0;
+        }
+
+        html,
+        body {
+            width: 210mm;
+            height: 297mm;
+            margin: 0;
+            padding: 0;
+            background: #e0e0e0;
+            font-family: 'Times New Roman', Times, serif;
+        }
+
+        /* CONTAINER KERTAS */
+        .cert-container {
+            width: 210mm;
+            height: 297mm;
+            background-color: #fff8f9;
+            background-image: linear-gradient(to bottom, #fff8f9, #fff);
+            box-sizing: border-box;
+            position: relative;
+            /* Border Ganda Merah Khas Ijazah */
+            border: 18px solid #c62828;
+            outline: 5px solid #ffcdd2;
+            outline-offset: -26px;
+            padding: 20mm 18mm;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* Watermark Logo Samar di Tengah */
+        .watermark {
+            position: absolute;
+            top: 45%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            width: 300px;
+            opacity: 0.04;
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        .content {
+            position: relative;
+            z-index: 1;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            text-align: center;
+        }
+
+        /* --- HEADER --- */
+        .header {
+            margin-bottom: 8px;
+        }
+
+        .garuda-logo {
+            width: 75px;
+            height: 75px;
+            margin: 0 auto 8px;
+        }
+
+        .garuda-logo img {
+            width: 100%;
+            height: 100%;
+            object-fit: contain;
+        }
+
+        .ministry-text {
+            font-size: 15px;
+            font-weight: bold;
+            margin: 1px 0;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            color: #222;
+        }
+
+        .school-text {
+            font-size: 17px;
+            font-weight: bold;
+            margin: 4px 0;
+            text-transform: uppercase;
+            color: #111;
+        }
+
+        /* --- JUDUL IJAZAH --- */
+        .title {
+            font-size: 34px;
+            font-weight: bold;
+            letter-spacing: 8px;
+            margin: 12px 0 3px;
+            text-decoration: underline;
+            text-underline-offset: 6px;
+            color: #000;
+        }
+
+        .subtitle {
+            font-size: 13px;
+            margin-bottom: 18px;
+            color: #333;
+        }
+
+        /* --- NAMA SANTRI (DI ATAS) --- */
+        .student-name {
+            font-size: 28px;
+            font-weight: bold;
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-decoration: underline;
+            text-underline-offset: 6px;
+            margin: 8px 0 20px;
+            display: block;
+            color: #000;
+        }
+
+        /* --- TABEL DATA --- */
+        .data-table {
+            width: 100%;
+            max-width: 480px;
+            margin: 0 auto 18px;
+            font-size: 15px;
+            line-height: 2;
+            text-align: left;
+        }
+
+        .data-table td {
+            padding: 3px 0;
+            vertical-align: top;
+        }
+
+        .label {
+            width: 170px;
+            font-weight: normal;
+            color: #333;
+            text-align: right;
+            padding-right: 10px;
+        }
+
+        .separator {
+            width: 15px;
+            text-align: center;
+        }
+
+        .value {
+            font-weight: bold;
+            color: #000;
+        }
+
+        /* --- STATUS LULUS --- */
+        .status-text {
+            font-size: 17px;
+            font-weight: bold;
+            margin-top: 12px;
+            color: #000;
+            line-height: 1.6;
+        }
+
+        .status-text b {
+            font-size: 20px;
+            text-decoration: underline;
+            color: #c62828;
+        }
+
+        /* --- FOOTER (Tanda Tangan) --- */
+        .footer {
+            width: 100%;
+            display: flex;
+            justify-content: flex-end;
+            margin-top: auto;
+            padding-right: 10px;
+            padding-bottom: 10px;
+        }
+
+        .sign-box {
+            text-align: center;
+            width: 240px;
+        }
+
+        .sign-title {
+            font-size: 14px;
+            margin-bottom: 65px;
+            font-weight: bold;
+        }
+
+        .sign-line {
+            border-top: 1px solid #000;
+            padding-top: 5px;
+            font-weight: bold;
+            font-size: 14px;
+        }
+
+        /* --- NOMOR SERI & QR --- */
+        .serial-number {
+            position: absolute;
+            bottom: 22mm;
+            left: 22mm;
+            font-size: 11px;
+            text-align: left;
+            color: #444;
+        }
+
+        .serial-number b {
+            color: #000;
+        }
+
+        .qr-section {
+            position: absolute;
+            bottom: 18mm;
+            right: 22mm;
+            text-align: center;
+        }
+
+        .qr-img {
+            width: 55px;
+            height: 55px;
+            border: 1px solid #ccc;
+            background: white;
+        }
+
+        .qr-label {
+            font-size: 8px;
+            color: #666;
+            margin-top: 2px;
+        }
+
+        /* Tombol (Hilang saat Print) */
+        .btn {
+            position: fixed;
+            top: 20px;
+            padding: 10px 20px;
+            border: none;
+            border-radius: 8px;
+            font-size: 14px;
+            cursor: pointer;
+            z-index: 100;
+            text-decoration: none;
+            color: white;
+            box-shadow: 0 2px 8px rgba(0, 0, 0, 0.3);
+        }
+
+        .print-btn {
+            right: 20px;
+            background: #1976d2;
+        }
+
+        .back-btn {
+            left: 20px;
+            background: #555;
+        }
+
+        /* PENGATURAN CETAK */
+        @media print {
+
+            html,
+            body {
+                background: #fff;
+                width: 210mm;
+                height: 297mm;
+            }
+
+            .btn {
+                display: none;
+            }
+
+            .cert-container {
+                width: 210mm;
+                height: 297mm;
+                border: 15px solid #c62828;
+                outline: 4px solid #ffcdd2;
+                box-shadow: none;
+                page-break-after: always;
+            }
+        }
+    </style>
+</head>
+
+<body>
+    <a href="{{ url_for('admin.ijazah') }}" class="btn back-btn">← Kembali</a>
+    <button class="btn print-btn" onclick="window.print()">🖨️ Cetak / Simpan PDF</button>
+
+    <div class="cert-container">
+        <!-- Watermark Logo Samar -->
+        <img src="{{ url_for('static', filename='logo.png') }}" class="watermark" alt="Watermark"
+            onerror="this.style.display='none'">
+
+        <div class="content">
+            <!-- Header -->
+            <div class="header">
+                <div class="garuda-logo">
+                    <img src="{{ url_for('static', filename='garuda.png') }}" alt="Garuda Pancasila"
+                        onerror="this.style.display='none'">
+                </div>
+                <p class="ministry-text">KEMENTERIAN AGAMA</p>
+                <p class="ministry-text">REPUBLIK INDONESIA</p>
+                <p class="school-text">IJAZAH</p>
+                <p class="school-text">MADRASAH DINIYAH TAKMILIYAH {{ school_info.name|upper }}</p>
+                <p style="font-size:12px; margin-top:4px; color:#444;">
+                    TAHUN PELAJARAN {{ academic_year.name if academic_year else '2024/2025' }}
+                </p>
+            </div>
+
+            <!-- Body -->
+            <div>
+                <p class="subtitle">Menerima Ijazah</p>
+                <p style="font-size:13px; margin-bottom:8px; color:#333;">Yang bertanda tangan di bawah ini menerangkan
+                    bahwa:</p>
+
+                <!-- NAMA SANTRI DI ATAS -->
+                <div class="student-name">{{ student.name }}</div>
+
+                <!-- DATA -->
+                <table class="data-table">
+                    <tr>
+                        <td class="label">Nomor Induk Santri</td>
+                        <td class="separator">:</td>
+                        <td class="value">{{ student.nis }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">NISN</td>
+                        <td class="separator">:</td>
+                        <td class="value">-</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Tempat, Tanggal Lahir</td>
+                        <td class="separator">:</td>
+                        <td class="value">{{ student.birth_place if student.birth_place else '-' }}, {{
+                            student.birth_date.strftime('%d %B %Y') if student.birth_date else '-' }}</td>
+                    </tr>
+                    <tr>
+                        <td class="label">Tahun Ajaran</td>
+                        <td class="separator">:</td>
+                        <td class="value">{{ academic_year.name if academic_year else '-' }}</td>
+                    </tr>
+                </table>
+
+                <div class="status-text">
+                    Telah menyelesaikan seluruh program pembelajaran dan dinyatakan <b>LULUS</b>
+                </div>
+            </div>
+
+            <!-- Footer Signature -->
+            <div class="footer">
+                <div class="sign-box">
+                    <p style="font-size:13px; margin-bottom:60px; color:#333;">{{ school_info.graduation_date }}</p>
+                    <p class="sign-title">Kepala Madrasah</p>
+                    <div class="sign-line">
+                        {% if school_info.principal %}{{ school_info.principal }}{% else %}Nama Kepala Madrasah{% endif
+                        %}
+                    </div>
+                </div>
+            </div>
+
+            <!-- Serial Number (Kiri Bawah) -->
+            <div class="serial-number">
+                <div>Nomor Seri: <b>IJZ/{{ student.nis }}/{{ current_year }}</b></div>
+            </div>
+
+            <!-- QR Code (Kanan Bawah) -->
+            <div class="qr-section">
+                <img src="data:image/png;base64,{{ qr_code }}" alt="QR" class="qr-img">
+                <div class="qr-label">Verifikasi Keaslian</div>
+            </div>
+        </div>
+    </div>
+</body>
+
+</html>
