@@ -37,10 +37,12 @@ def create_app():
         return User.query.get(int(user_id))
 
 # GANTI BARIS 40 MENJADI:
+# GANTI BARIS 40 MENJADI:
 from app.routes import admin, auth, guru
 
-# GANTI REGISTER BLUEPRINT (Baris 43-45):
+# GANTI BARIS 43-45 MENJADI:
 app.register_blueprint(admin.admin_bp, url_prefix='/admin')
 app.register_blueprint(auth.auth_bp)
 app.register_blueprint(guru.guru_bp, url_prefix='/guru')
+
     return app
