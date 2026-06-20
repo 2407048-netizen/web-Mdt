@@ -1,3 +1,9 @@
-from app import app as application
+from app import app
+import os
 
-# Vercel akan menjalankan ini
+# Untuk Vercel
+application = app
+
+if __name__ == "__main__":
+    port = int(os.environ.get("PORT", 5000))
+    app.run(host="0.0.0.0", port=port, debug=False)  # debug=False untuk production
