@@ -36,12 +36,11 @@ def create_app():
     def load_user(user_id):
         return User.query.get(int(user_id))
 
-    # Import Routes DI DALAM FUNGSI (Menghindari Circular Import)
-    from app.routes import dashboard, auth, absensi
-    
-    # Register Blueprints
-    app.register_blueprint(dashboard.dashboard_bp, url_prefix='/admin')
-    app.register_blueprint(auth.auth_bp)
-    app.register_blueprint(absensi.absensi_bp)
+# GANTI BARIS 40 MENJADI:
+from app.routes import admin, auth, guru
 
+# GANTI REGISTER BLUEPRINT (Baris 43-45):
+app.register_blueprint(admin.admin_bp, url_prefix='/admin')
+app.register_blueprint(auth.auth_bp)
+app.register_blueprint(guru.guru_bp, url_prefix='/guru')
     return app
