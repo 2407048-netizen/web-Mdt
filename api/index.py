@@ -1,9 +1,20 @@
-from app import app
+import sys
 import os
 
-# Untuk Vercel
-application = app
+# Tambahkan root folder ke PATH
+sys.path.insert(0, os.path.join(os.path.dirname(__file__), '..'))
 
-if __name__ == "__main__":
-    port = int(os.environ.get("PORT", 5000))
-    app.run(host="0.0.0.0", port=port, debug=False)  # debug=False untuk production
+try:
+    # Coba import 'app' dulu
+    from app import app as application
+    print("Success: Imported 'app' from app/__init__.py")
+except ImportError:
+    try:
+        # Jika gagal, coba import 'application'
+        from app import application
+        print("Success: Imported 'application' from app/__init__.py")
+    except ImportError:
+        # Jika masih gagal, tampilkan error jelas
+        raise ImportError("Error: Tidak ditemukan 'app' atau 'application' di app/__init__.py. Cek file tersebut!")
+
+# Vercel butuh variabel bernama 'application'

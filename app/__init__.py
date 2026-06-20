@@ -1,43 +1,22 @@
 from flask import Flask
-from app.config import Config
-from app.database import db, migrate
+from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+import os
 
-login_manager = LoginManager()
-login_manager.login_view = 'auth.guru_login'
-login_manager.login_message = "Harap masuk untuk mengakses halaman ini."
+# 1. INI HARUS ADA DI PALING ATAS
+app = Flask(__name__) 
 
-def create_app(config_class=Config):
-    app = Flask(__name__)
-    app.config.from_object(config_class)
+# Konfigurasi
+app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'rahasia')
+app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///mdt.db')
 
-    db.init_app(app)
-    migrate.init_app(app, db)
-    login_manager.init_app(app)
+# Inisialisasi Extensions
+db = SQLAlchemy(app)
+login_manager = LoginManager(app)
+login_manager.login_view = 'auth.login'
 
-    # Register blueprints here
-    from app.routes.auth import bp as auth_bp
-    app.register_blueprint(auth_bp, url_prefix='/auth')
-
-    from app.routes.admin import bp as admin_bp
-    app.register_blueprint(admin_bp, url_prefix='/admin')
-
-    from app.routes.guru import bp as guru_bp
-    app.register_blueprint(guru_bp, url_prefix='/guru')
-
-    @app.route('/')
-    def index():
-        from flask import redirect, url_for
-        return redirect(url_for('auth.login'))
-
-    @app.context_processor
-    def inject_globals():
-        from datetime import datetime
-        return {'now': datetime.now()}
-
-    return app
-
-from app.models import User
-@login_manager.user_loader
-def load_user(user_id):
-    return User.query.get(int(user_id))
+# 2. IMPORT MODEL & ROUTES (Di Bagian Bawah)
+# Hapus komentar di bawah ini sesuai nama file Anda
+from app import models 
+# from app.routes import dashboard, auth, absensi 
+# dst...
