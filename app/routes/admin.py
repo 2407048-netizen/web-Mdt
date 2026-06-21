@@ -1,7 +1,7 @@
 # app/routes/admin.py
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort, send_file, render_template_string, make_response
 from flask_login import login_required, current_user
-from app.database import db
+from app import db  # Menggunakan db dari app/__init__.py agar konsisten
 from app.models import (User, Classroom, Subject, Schedule, Student,
                          ClassroomStudent, AcademicYear, ActivityLog,
                          Attendance, ExamScore, DAY_NAMES, PRAYER_SESSIONS,
@@ -14,14 +14,15 @@ import qrcode
 import base64
 import os
 
-bp = Blueprint('admin', __name__)
+# PENTING: Nama variabel Blueprint WAJIB 'admin_bp'
+admin_bp = Blueprint('admin', __name__)
 
 def log_activity(action, detail=''):
     log = ActivityLog(user_id=current_user.id, action=action, detail=detail, ip_address=request.remote_addr)
     db.session.add(log)
     db.session.commit()
 
-@bp.before_request
+@admin_bp.before_request
 @login_required
 def require_admin():
     if current_user.role != 'admin':
@@ -29,8 +30,8 @@ def require_admin():
 
 # ─────────────────────────────────────────────
 #  DASHBOARD
-# ─────────────────────────────────────────────
-@bp.route('/dashboard')
+# ────────────────────────────────────────────
+@admin_bp.route('/dashboard')
 def dashboard():
     total_students = Student.query.filter_by(status='active').count()
     total_teachers = User.query.filter_by(role='guru').count()
@@ -42,7 +43,7 @@ def dashboard():
 # ─────────────────────────────────────────────
 #  DATA SANTRI (UPLOAD & CRUD)
 # ─────────────────────────────────────────────
-@bp.route('/students')
+@admin_bp.route('/students')
 def students():
     kelas_id = request.args.get('kelas_id', type=int)
     query = Student.query
@@ -60,7 +61,7 @@ def students():
                            classes=all_classes, 
                            selected_classroom_id=kelas_id)
 
-@bp.route('/upload-students', methods=['POST'])
+@admin_bp.route('/upload-students', methods=['POST'])
 def upload_students():
     """Handle upload Excel santri dengan normalisasi data & typo handling"""
     file = request.files.get('file')
@@ -168,7 +169,7 @@ def upload_students():
         print(e)
     return redirect(url_for('admin.students'))
 
-@bp.route('/students/add', methods=['GET', 'POST'])
+@admin_bp.route('/students/add', methods=['GET', 'POST'])
 def add_student():
     classrooms = Classroom.query.order_by(Classroom.level).all()
     academic_years = AcademicYear.query.all()
@@ -211,7 +212,7 @@ def add_student():
         return redirect(url_for('admin.students'))
     return render_template('admin/student_form.html', student=None, classrooms=classrooms, academic_years=academic_years, current_classroom_id=None, prayer_sessions=PRAYER_SESSIONS, session_classrooms={}, current_session=None)
 
-@bp.route('/students/edit/<int:id>', methods=['GET', 'POST'])
+@admin_bp.route('/students/edit/<int:id>', methods=['GET', 'POST'])
 def edit_student(id):
     student = Student.query.get_or_404(id)
     classrooms = Classroom.query.order_by(Classroom.level).all()
@@ -243,7 +244,7 @@ def edit_student(id):
         return redirect(url_for('admin.students'))
     return render_template('admin/student_form.html', student=student, classrooms=classrooms, academic_years=academic_years, current_classroom_id=current_classroom_id, prayer_sessions=PRAYER_SESSIONS, session_classrooms={}, current_session=None)
 
-@bp.route('/students/delete/<int:id>', methods=['POST'])
+@admin_bp.route('/students/delete/<int:id>', methods=['POST'])
 def delete_student(id):
     student = Student.query.get_or_404(id)
     student.status = 'inactive'
@@ -253,9 +254,9 @@ def delete_student(id):
     return redirect(url_for('admin.students'))
 
 # ─────────────────────────────────────────────
-#  JADWAL (FIXED: Explicit Join)
+#  JADWAL
 # ─────────────────────────────────────────────
-@bp.route('/schedules')
+@admin_bp.route('/schedules')
 def schedules():
     all_schedules = (Schedule.query
                      .join(User, Schedule.teacher_id == User.id)
@@ -265,7 +266,7 @@ def schedules():
                      .all())
     return render_template('admin/schedules.html', schedules=all_schedules, day_names=DAY_NAMES)
 
-@bp.route('/schedules/add', methods=['GET', 'POST'])
+@admin_bp.route('/schedules/add', methods=['GET', 'POST'])
 def add_schedule():
     teachers = User.query.filter_by(role='guru', is_active=True).all()
     classrooms = Classroom.query.order_by(Classroom.level).all()
@@ -305,7 +306,7 @@ def add_schedule():
         return redirect(url_for('admin.schedules'))
     return render_template('admin/schedule_form.html', teachers=teachers, classrooms=classrooms, subjects=subjects, day_names=DAY_NAMES, prayer_sessions=PRAYER_SESSIONS, session_classrooms=session_classrooms, schedule=None)
 
-@bp.route('/schedules/edit/<int:id>', methods=['GET', 'POST'])
+@admin_bp.route('/schedules/edit/<int:id>', methods=['GET', 'POST'])
 def edit_schedule(id):
     schedule = Schedule.query.get_or_404(id)
     teachers = User.query.filter_by(role='guru', is_active=True).all()
@@ -342,7 +343,7 @@ def edit_schedule(id):
         return redirect(url_for('admin.schedules'))
     return render_template('admin/schedule_form.html', teachers=teachers, classrooms=classrooms, subjects=subjects, day_names=DAY_NAMES, prayer_sessions=PRAYER_SESSIONS, session_classrooms=session_classrooms, schedule=schedule)
 
-@bp.route('/schedules/delete/<int:id>', methods=['POST'])
+@admin_bp.route('/schedules/delete/<int:id>', methods=['POST'])
 def delete_schedule(id):
     schedule = Schedule.query.get_or_404(id)
     schedule.is_active = False
@@ -351,87 +352,9 @@ def delete_schedule(id):
     return redirect(url_for('admin.schedules'))
 
 # ─────────────────────────────────────────────
-#  JADWAL KHUSUS MAGRIB (SELASA LIBUR, KAMIS TAWASULAN)
-# ─────────────────────────────────────────────
-@bp.route('/jadwal-magrib', methods=['GET', 'POST'])
-def jadwal_magrib():
-    """Mengatur jadwal khusus untuk sesi Magrib"""
-    
-    if request.method == 'POST':
-        # Hapus jadwal Magrib yang ada untuk Selasa (1) dan Kamis (3)
-        Schedule.query.filter_by(prayer_session='Magrib', day_of_week=1).delete()
-        Schedule.query.filter_by(prayer_session='Magrib', day_of_week=3).delete()
-        
-        # Ambil data dari form
-        libur_day = request.form.get('libur_day', type=int, default=1)  # Default Selasa
-        tawasulan_day = request.form.get('tawasulan_day', type=int, default=3)  # Default Kamis
-        
-        # Buat jadwal Tawasulan di hari yang dipilih untuk semua kelas Magrib
-        kelas_magrib = Classroom.query.filter(Classroom.name.like('Magrib%')).all()
-        
-        for kelas in kelas_magrib:
-            # Tawasulan
-            tawasulan = Schedule(
-                teacher_id=current_user.id,
-                classroom_id=kelas.id,
-                subject_id=None,
-                day_of_week=tawasulan_day,
-                prayer_session='Magrib',
-                activity_type='tawasulan',
-                description='Kegiatan Tawasulan dan Doa Bersama',
-                is_active=True
-            )
-            db.session.add(tawasulan)
-        
-        db.session.commit()
-        flash(f'Jadwal Magrib berhasil diupdate: Hari {DAY_NAMES[libur_day]} libur, Hari {DAY_NAMES[tawasulan_day]} Tawasulan', 'success')
-        return redirect(url_for('admin.schedules'))
-    
-    # Ambil pengaturan saat ini (default: Selasa=1 libur, Kamis=3 tawasulan)
-    libur_schedule = Schedule.query.filter_by(prayer_session='Magrib', day_of_week=1, activity_type='libur').first()
-    tawasulan_schedule = Schedule.query.filter_by(prayer_session='Magrib', day_of_week=3, activity_type='tawasulan').first()
-    
-    current_libur_day = 1 if libur_schedule else 1  # Default Selasa
-    current_tawasulan_day = 3 if tawasulan_schedule else 3  # Default Kamis
-    
-    return render_template('admin/jadwal_magrib.html', 
-                           libur_day=current_libur_day,
-                           tawasulan_day=current_tawasulan_day,
-                           day_names=DAY_NAMES)
-
-@bp.route('/update-jadwal-magrib', methods=['POST'])
-def update_jadwal_magrib():
-    """Update jadwal Magrib: Selasa libur, Kamis Tawasulan"""
-    
-    # Hapus jadwal Magrib yang ada untuk Selasa dan Kamis
-    Schedule.query.filter_by(prayer_session='Magrib', day_of_week=1).delete()  # Selasa
-    Schedule.query.filter_by(prayer_session='Magrib', day_of_week=3).delete()  # Kamis
-    
-    # Buat jadwal Tawasulan di Kamis (day_of_week=3) untuk semua kelas Magrib
-    kelas_magrib = Classroom.query.filter(Classroom.name.like('Magrib%')).all()
-    
-    for kelas in kelas_magrib:
-        # Tawasulan di Kamis
-        tawasulan = Schedule(
-            teacher_id=current_user.id,
-            classroom_id=kelas.id,
-            subject_id=None,
-            day_of_week=3,  # Kamis
-            prayer_session='Magrib',
-            activity_type='tawasulan',
-            description='Kegiatan Tawasulan dan Doa Bersama',
-            is_active=True
-        )
-        db.session.add(tawasulan)
-    
-    db.session.commit()
-    flash('Jadwal Magrib berhasil diupdate: Selasa libur, Kamis Tawasulan', 'success')
-    return redirect(url_for('admin.schedules'))
-
-# ─────────────────────────────────────────────
 #  GURU
 # ─────────────────────────────────────────────
-@bp.route('/registrations')
+@admin_bp.route('/registrations')
 def registrations():
     status_filter = request.args.get('status', '')
     query = User.query.filter_by(role='guru').order_by(User.created_at.desc())
@@ -441,7 +364,7 @@ def registrations():
     stats = {'pending': User.query.filter_by(role='guru', is_active=False).count(), 'active': User.query.filter_by(role='guru', is_active=True).count(), 'total': User.query.filter_by(role='guru').count()}
     return render_template('admin/registrations.html', teachers=teachers, stats=stats, status_filter=status_filter)
 
-@bp.route('/registrations/toggle/<int:id>', methods=['POST'])
+@admin_bp.route('/registrations/toggle/<int:id>', methods=['POST'])
 def toggle_guru(id):
     guru = User.query.get_or_404(id)
     if guru.role != 'guru': abort(403)
@@ -458,13 +381,13 @@ def toggle_guru(id):
 # ─────────────────────────────────────────────
 #  KELAS
 # ─────────────────────────────────────────────
-@bp.route('/classrooms')
+@admin_bp.route('/classrooms')
 def classrooms():
     all_cls = Classroom.query.order_by(Classroom.level, Classroom.name).all()
     student_counts = {cls.id: ClassroomStudent.query.filter_by(classroom_id=cls.id).count() for cls in all_cls}
     return render_template('admin/classrooms.html', classrooms=all_cls, student_counts=student_counts)
 
-@bp.route('/classrooms/add', methods=['POST'])
+@admin_bp.route('/classrooms/add', methods=['POST'])
 def add_classroom():
     name = request.form.get('name', '').strip()
     level = request.form.get('level', type=int)
@@ -481,7 +404,7 @@ def add_classroom():
     flash(f'Kelas {name} berhasil ditambahkan!', 'success')
     return redirect(url_for('admin.classrooms'))
 
-@bp.route('/classrooms/delete/<int:id>', methods=['POST'])
+@admin_bp.route('/classrooms/delete/<int:id>', methods=['POST'])
 def delete_classroom(id):
     cls = Classroom.query.get_or_404(id)
     log_activity('HAPUS_KELAS', f'Kelas: {cls.name}')
@@ -493,7 +416,7 @@ def delete_classroom(id):
 # ─────────────────────────────────────────────
 #  LAPORAN ABSENSI
 # ─────────────────────────────────────────────
-@bp.route('/reports')
+@admin_bp.route('/reports')
 def reports():
     all_cls = Classroom.query.order_by(Classroom.level).all()
     selected_classroom = request.args.get('classroom_id', type=int)
@@ -533,9 +456,9 @@ def reports():
     return render_template('admin/reports.html', classrooms=all_cls, selected_classroom=selected_classroom, selected_session=selected_session, prayer_sessions=PRAYER_SESSIONS, session_classrooms={}, date_from=date_from, date_to=date_to, total_records=len(records), stats=stats, student_summary=student_summary)
 
 # ─────────────────────────────────────────────
-#  PERINGKAT (Updated Logic: Sakit/Izin = 50%)
+#  PERINGKAT
 # ─────────────────────────────────────────────
-@bp.route('/rankings')
+@admin_bp.route('/rankings')
 def rankings():
     all_cls = Classroom.query.order_by(Classroom.level).all()
     selected_classroom = request.args.get('classroom_id', type=int)
@@ -600,9 +523,9 @@ def rankings():
     return render_template('admin/rankings.html', classrooms=all_cls, selected_classroom=selected_classroom, selected_session=selected_session, prayer_sessions=PRAYER_SESSIONS, session_classrooms={}, rankings=rankings)
 
 # ─────────────────────────────────────────────
-#  SPP (WITH MONTH FILTER)
+#  SPP
 # ─────────────────────────────────────────────
-@bp.route('/spp', methods=['GET'])
+@admin_bp.route('/spp', methods=['GET'])
 def spp():
     classrooms = Classroom.query.filter(Classroom.name.like('Magrib%')).order_by(Classroom.level).all()
     selected_classroom_id = request.args.get('classroom_id', type=int, default=0)
@@ -662,7 +585,7 @@ def spp():
                            years_range=years_range,
                            history_payments=history_payments)
 
-@bp.route('/spp/cancel/<int:id>', methods=['POST'])
+@admin_bp.route('/spp/cancel/<int:id>', methods=['POST'])
 def cancel_spp(id):
     """Membatalkan pembayaran SPP"""
     payment = SppPayment.query.get_or_404(id)
@@ -678,11 +601,10 @@ def cancel_spp(id):
     return redirect(url_for('admin.spp'))
 
 # ─────────────────────────────────────────────
-#  ARUS KAS (WITH MONTH/CLASS FILTER & SUMMARY)
+#  ARUS KAS
 # ─────────────────────────────────────────────
-@bp.route('/arus-kas', methods=['GET'])
+@admin_bp.route('/arus-kas', methods=['GET'])
 def arus_kas():
-    # Ambil parameter filter
     filter_year = request.args.get('year', type=int, default=datetime.now().year)
     filter_month = request.args.get('month', type=int)
     filter_class_id = request.args.get('class_id', type=int)
@@ -696,7 +618,7 @@ def arus_kas():
     spp_payments = SppPayment.query.filter_by(year=filter_year).all()
     cash_flows = CashFlow.query.all()
 
-    # Apply filter bulan (jika ada)
+    # Apply filter bulan
     if filter_month:
         spp_payments = [p for p in spp_payments if p.month == filter_month]
         cash_flows = [cf for cf in cash_flows if cf.transaction_date.month == filter_month]
@@ -704,7 +626,7 @@ def arus_kas():
     transactions = []
     class_totals = {}
 
-    # ✅ PERBAIKAN: Hanya ambil kelas Magrib untuk filter dropdown di Arus Kas
+    # ✅ Hanya ambil kelas Magrib untuk filter dropdown di Arus Kas
     all_classrooms = Classroom.query.filter(Classroom.name.like('Magrib%'))\
                                     .order_by(Classroom.level, Classroom.name)\
                                     .all()
@@ -765,7 +687,7 @@ def arus_kas():
                            class_totals=class_totals,
                            months_names=months_names)
 
-@bp.route('/arus-kas/add', methods=['POST'])
+@admin_bp.route('/arus-kas/add', methods=['POST'])
 def arus_kas_add():
     category = request.form.get('category')
     amount_str = request.form.get('amount')
@@ -784,7 +706,7 @@ def arus_kas_add():
         flash(f'Gagal mencatat transaksi: {str(e)}', 'danger')
     return redirect(url_for('admin.arus_kas'))
 
-@bp.route('/arus-kas/delete/<int:id>', methods=['POST'])
+@admin_bp.route('/arus-kas/delete/<int:id>', methods=['POST'])
 def arus_kas_delete(id):
     cf = CashFlow.query.get_or_404(id)
     try:
@@ -797,290 +719,9 @@ def arus_kas_delete(id):
     return redirect(url_for('admin.arus_kas'))
 
 # ─────────────────────────────────────────────
-#  EXPORT ARUS KAS KE PDF
-# ─────────────────────────────────────────────
-@bp.route('/arus-kas/export-pdf', methods=['GET'])
-def export_arus_kas_pdf():
-    """Export laporan arus kas ke PDF"""
-    # Ambil parameter filter (sama seperti route arus_kas)
-    filter_year = request.args.get('year', type=int, default=datetime.now().year)
-    filter_month = request.args.get('month', type=int)
-    filter_class_id = request.args.get('class_id', type=int)
-    
-    # Ambil data (sama seperti route arus_kas)
-    spp_payments = SppPayment.query.filter_by(year=filter_year).all()
-    cash_flows = CashFlow.query.all()
-    
-    # Apply filter bulan
-    if filter_month:
-        spp_payments = [p for p in spp_payments if p.month == filter_month]
-        cash_flows = [cf for cf in cash_flows if cf.transaction_date.month == filter_month]
-    
-    # Filter kelas
-    if filter_class_id:
-        target_class = Classroom.query.get(filter_class_id)
-        if target_class:
-            pivot = ClassroomStudent.query.filter_by(classroom_id=filter_class_id).all()
-            student_ids = [p.student_id for p in pivot]
-            spp_payments = [p for p in spp_payments if p.student_id in student_ids]
-    
-    # Hitung total
-    total_income = sum(p.amount for p in spp_payments)
-    total_expense = sum(cf.amount for cf in cash_flows if cf.type == 'expense')
-    balance = total_income - total_expense
-    
-    # Siapkan data transaksi
-    months_names = {
-        1: 'Januari', 2: 'Februari', 3: 'Maret', 4: 'April', 5: 'Mei', 6: 'Juni',
-        7: 'Juli', 8: 'Agustus', 9: 'September', 10: 'Oktober', 11: 'November', 12: 'Desember'
-    }
-    
-    transactions = []
-    for p in spp_payments:
-        transactions.append({
-            'date': p.paid_date,
-            'description': f"Setoran SPP {months_names[p.month]} {p.year} - {p.student.name}",
-            'type': 'income',
-            'amount': p.amount,
-            'recorded_by': p.recorder.username
-        })
-    
-    for cf in cash_flows:
-        transactions.append({
-            'date': cf.transaction_date,
-            'description': cf.description or cf.category,
-            'type': cf.type,
-            'amount': cf.amount,
-            'recorded_by': cf.recorder.username
-        })
-    
-    # Sort by date
-    transactions.sort(key=lambda x: x['date'], reverse=True)
-    
-    # Render HTML template untuk PDF
-    html_content = render_template_string(PDF_TEMPLATE, 
-                                          transactions=transactions,
-                                          total_income=total_income,
-                                          total_expense=total_expense,
-                                          balance=balance,
-                                          filter_year=filter_year,
-                                          filter_month=filter_month,
-                                          months_names=months_names,
-                                          generated_at=datetime.now())
-    
-    # Generate PDF
-    try:
-        from weasyprint import HTML
-        pdf = HTML(string=html_content, base_url=request.host_url)
-        pdf_bytes = pdf.write_pdf()
-    except Exception as e:
-        flash(f'Gagal generate PDF: {str(e)}', 'error')
-        return redirect(url_for('admin.arus_kas', year=filter_year, month=filter_month, class_id=filter_class_id))
-    
-    # Return sebagai file download
-    response = make_response(pdf_bytes)
-    response.headers['Content-Type'] = 'application/pdf'
-    filename = f"Laporan_Arus_Kas_{filter_year}_{filter_month or 'Semua_Bulan'}.pdf"
-    response.headers['Content-Disposition'] = f'attachment; filename={filename}'
-    
-    return response
-
-# Template HTML untuk PDF
-PDF_TEMPLATE = '''
-<!DOCTYPE html>
-<html>
-<head>
-    <meta charset="UTF-8">
-    <title>Laporan Arus Kas - MDT Miftahul Hidayah</title>
-    <style>
-        @page { size: A4 landscape; margin: 15mm; }
-        body { 
-            font-family: Arial, sans-serif; 
-            font-size: 11px;
-            line-height: 1.4;
-            color: #333;
-        }
-        .header {
-            text-align: center;
-            border-bottom: 3px solid #059669;
-            padding-bottom: 10px;
-            margin-bottom: 20px;
-        }
-        .header h1 { 
-            margin: 0; 
-            color: #059669;
-            font-size: 20px;
-            text-transform: uppercase;
-        }
-        .header h2 { 
-            margin: 5px 0 0; 
-            font-size: 16px;
-            color: #065f46;
-        }
-        .info-box {
-            background: #f0fdf4;
-            border: 1px solid #059669;
-            padding: 10px;
-            margin-bottom: 20px;
-            border-radius: 5px;
-        }
-        .info-row {
-            display: flex;
-            justify-content: space-between;
-            margin-bottom: 5px;
-        }
-        .summary {
-            display: flex;
-            gap: 15px;
-            margin-bottom: 20px;
-        }
-        .summary-box {
-            flex: 1;
-            padding: 15px;
-            border-radius: 8px;
-            text-align: center;
-        }
-        .summary-box.income {
-            background: #d1fae5;
-            border: 2px solid #059669;
-        }
-        .summary-box.expense {
-            background: #fee2e2;
-            border: 2px solid #dc2626;
-        }
-        .summary-box.balance {
-            background: #fef3c7;
-            border: 2px solid #d97706;
-        }
-        .summary-box h3 {
-            margin: 0 0 10px;
-            font-size: 12px;
-            text-transform: uppercase;
-        }
-        .summary-box .amount {
-            font-size: 20px;
-            font-weight: bold;
-        }
-        table {
-            width: 100%;
-            border-collapse: collapse;
-            margin-top: 15px;
-        }
-        th {
-            background: #059669;
-            color: white;
-            padding: 8px;
-            text-align: left;
-            font-size: 10px;
-        }
-        td {
-            padding: 6px 8px;
-            border-bottom: 1px solid #e5e7eb;
-            font-size: 10px;
-        }
-        tr:nth-child(even) {
-            background: #f9fafb;
-        }
-        .income-row {
-            color: #059669;
-            font-weight: bold;
-        }
-        .expense-row {
-            color: #dc2626;
-            font-weight: bold;
-        }
-        .footer {
-            margin-top: 30px;
-            text-align: right;
-            font-size: 10px;
-        }
-        .signature {
-            margin-top: 50px;
-            text-align: center;
-            display: inline-block;
-            width: 200px;
-        }
-        .signature-line {
-            border-top: 1px solid #333;
-            margin-top: 40px;
-            padding-top: 5px;
-        }
-    </style>
-</head>
-<body>
-    <div class="header">
-        <h1>MDT Miftahul Hidayah</h1>
-        <h2>Laporan Arus Kas & Saldo</h2>
-        <p>Tahun {{ filter_year }}{% if filter_month %} - {{ months_names[filter_month] }}{% endif %}</p>
-    </div>
-    
-    <div class="info-box">
-        <div class="info-row">
-            <strong>Dicetak pada:</strong>
-            <span>{{ generated_at.strftime('%d %B %Y, %H:%M:%S') }}</span>
-        </div>
-        <div class="info-row">
-            <strong>Total Transaksi:</strong>
-            <span>{{ transactions|length }} transaksi</span>
-        </div>
-    </div>
-    
-    <div class="summary">
-        <div class="summary-box income">
-            <h3>Total Pemasukan</h3>
-            <div class="amount">Rp {{ "{:,.0f}".format(total_income) }}</div>
-        </div>
-        <div class="summary-box expense">
-            <h3>Total Pengeluaran</h3>
-            <div class="amount">Rp {{ "{:,.0f}".format(total_expense) }}</div>
-        </div>
-        <div class="summary-box balance">
-            <h3>Saldo Akhir</h3>
-            <div class="amount">Rp {{ "{:,.0f}".format(balance) }}</div>
-        </div>
-    </div>
-    
-    <h3 style="margin-top: 25px; color: #059669;">Rincian Transaksi</h3>
-    <table>
-        <thead>
-            <tr>
-                <th>Tanggal</th>
-                <th>Keterangan</th>
-                <th>Tipe</th>
-                <th style="text-align: right;">Jumlah</th>
-                <th>Dicatat Oleh</th>
-            </tr>
-        </thead>
-        <tbody>
-            {% for t in transactions %}
-            <tr class="{{ 'income-row' if t.type == 'income' else 'expense-row' }}">
-                <td>{{ t.date.strftime('%d/%m/%Y') }}</td>
-                <td>{{ t.description }}</td>
-                <td>{{ 'Pemasukan' if t.type == 'income' else 'Pengeluaran' }}</td>
-                <td style="text-align: right;">Rp {{ "{:,.0f}".format(t.amount) }}</td>
-                <td>{{ t.recorded_by }}</td>
-            </tr>
-            {% endfor %}
-        </tbody>
-    </table>
-    
-    <div class="footer">
-        <div class="signature">
-            <p>Mengetahui,</p>
-            <p>Kepala Madrasah</p>
-            <div class="signature-line">
-                <p><strong>_________________</strong></p>
-            </div>
-        </div>
-    </div>
-</body>
-</html>
-'''
-
-# ─────────────────────────────────────────────
-#  CETAK IJAZAH (WITH QR CODE & EXPORT)
-# ─────────────────────────────────────────────
-@bp.route('/ijazah')
+#  CETAK IJAZAH
+# ────────────────────────────────────────────
+@admin_bp.route('/ijazah')
 def ijazah():
     level = request.args.get('level', type=int)
     academic_year_id = request.args.get('academic_year_id', type=int)
@@ -1116,7 +757,7 @@ def ijazah():
                            academic_years=academic_years, selected_level=level,
                            selected_ay=academic_year_id)
 
-@bp.route('/ijazah/print/<int:student_id>')
+@admin_bp.route('/ijazah/print/<int:student_id>')
 def print_ijazah(student_id):
     from datetime import datetime as dt
     
@@ -1156,7 +797,7 @@ def print_ijazah(student_id):
                            verify_url=verify_url,
                            current_year=current_year)
 
-@bp.route('/ijazah/verify/<int:student_id>')
+@admin_bp.route('/ijazah/verify/<int:student_id>')
 def verify_ijazah(student_id):
     """Halaman verifikasi keaslian ijazah via QR Code"""
     student = Student.query.get_or_404(student_id)
@@ -1173,89 +814,3 @@ def verify_ijazah(student_id):
                            academic_year=academic_year,
                            verified=verified,
                            verified_at=datetime.now())
-
-@bp.route('/ijazah/export', methods=['GET', 'POST'])
-def export_ijazah():
-    """Export data ijazah ke Excel (Bulk)"""
-    if request.method == 'POST':
-        level = request.form.get('level', type=int)
-        academic_year_id = request.form.get('academic_year_id', type=int)
-        
-        query = Student.query.filter_by(status='active')
-        
-        if level:
-            classrooms = Classroom.query.filter_by(level=level).all()
-            cls_ids = [c.id for c in classrooms]
-            cs_records = ClassroomStudent.query.filter(ClassroomStudent.classroom_id.in_(cls_ids)).all()
-            student_ids = [cs.student_id for cs in cs_records]
-            if student_ids:
-                query = query.filter(Student.id.in_(student_ids))
-            else:
-                query = query.filter(Student.id == -1)
-        
-        if academic_year_id:
-            cs_records = ClassroomStudent.query.filter_by(academic_year_id=academic_year_id).all()
-            student_ids = [cs.student_id for cs in cs_records]
-            if student_ids:
-                query = query.filter(Student.id.in_(student_ids))
-            else:
-                query = query.filter(Student.id == -1)
-        
-        students = query.order_by(Student.name).all()
-        
-        # Prepare data untuk Excel
-        data = []
-        for student in students:
-            cs = ClassroomStudent.query.filter_by(student_id=student.id).first()
-            classroom = cs.classroom if cs else None
-            ay = cs.academic_year if cs and cs.academic_year else None
-            
-            data.append({
-                'NIS': student.nis,
-                'Nama Lengkap': student.name,
-                'Jenis Kelamin': 'Laki-laki' if student.gender == 'L' else 'Perempuan',
-                'Kelas': classroom.name if classroom else '-',
-                'Tahun Ajaran': ay.name if ay else '-',
-                'Tanggal Lulus': datetime.now().strftime('%d/%m/%Y'),
-                'Nomor Ijazah': f"IJZ/{student.nis}/{datetime.now().year}",
-                'Status': 'LULUS'
-            })
-        
-        # Export ke Excel
-        df = pd.DataFrame(data)
-        output = BytesIO()
-        
-        with pd.ExcelWriter(output, engine='openpyxl') as writer:
-            df.to_excel(writer, sheet_name='Data Ijazah', index=False)
-            
-            # Auto-adjust column widths
-            worksheet = writer.sheets['Data Ijazah']
-            for column in worksheet.columns:
-                max_length = 0
-                column_letter = column[0].column_letter
-                for cell in column:
-                    try:
-                        if len(str(cell.value)) > max_length:
-                            max_length = len(str(cell.value))
-                    except:
-                        pass
-                adjusted_width = min(max_length + 2, 50)
-                worksheet.column_dimensions[column_letter].width = adjusted_width
-        
-        output.seek(0)
-        
-        return send_file(
-            output,
-            mimetype='application/vnd.openxmlformats-officedocument.spreadsheetml.sheet',
-            as_attachment=True,
-            download_name=f'Data_Ijazah_{datetime.now().strftime("%Y%m%d")}.xlsx'
-        )
-    
-    # GET request - tampilkan form
-    levels = db.session.query(Classroom.level).distinct().order_by(Classroom.level).all()
-    levels = [l[0] for l in levels]
-    academic_years = AcademicYear.query.all()
-    
-    return render_template('admin/ijazah_export.html',
-                           levels=levels,
-                           academic_years=academic_years)
