@@ -20,12 +20,14 @@ def _redirect_by_role(user):
 # ─────────────────────────────────────────────
 #  ROOT: Halaman Pilih Role
 # ─────────────────────────────────────────────
+from datetime import datetime  # Pastikan ada di atas file
+
 @auth_bp.route('/login')
 def login():
     """Halaman pemilihan login (Admin atau Guru)."""
     if current_user.is_authenticated:
         return _redirect_by_role(current_user)
-    return render_template('auth/choose_role.html')
+    return render_template('auth/choose_role.html', now=datetime.now())
 
 # ─────────────────────────────────────────────
 #  ADMIN LOGIN
