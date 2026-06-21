@@ -8,17 +8,14 @@ login_manager = LoginManager()
 
 def create_app():
     app = Flask(__name__)
-    
     app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', 'default-secret')
     
-    # Fix Read-Only File System di Vercel
     if os.environ.get('VERCEL'):
         app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:////tmp/mdt.db'
     else:
         app.config['SQLALCHEMY_DATABASE_URI'] = os.environ.get('DATABASE_URL', 'sqlite:///mdt.db')
         
     app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
-    
     db.init_app(app)
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'
@@ -30,11 +27,11 @@ def create_app():
 
     from app.routes import admin, auth, guru
     
+    # PASTIKAN 3 BARIS INI HANYA MUNCUL 1 KALI:
     app.register_blueprint(admin.admin_bp, url_prefix='/admin')
-    app.register_blueprint(auth.auth_bp)
+    app.register_blueprint(auth.auth_bp)  # ← CUMA 1 KALI
     app.register_blueprint(guru.guru_bp, url_prefix='/guru')
 
-    # TAMBAHAN: Redirect halaman utama ke halaman login
     @app.route('/')
     def index():
         return redirect(url_for('auth.login'))
