@@ -9,3 +9,4 @@ gunicorn==21.2.0
 pandas
 qrcode
 Pillow
+openpyxl
