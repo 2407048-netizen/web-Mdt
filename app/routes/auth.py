@@ -32,10 +32,17 @@ def login():
 # ─────────────────────────────────────────────
 #  ADMIN LOGIN
 # ─────────────────────────────────────────────
-@auth_bp.route('/admin/login', methods=['GET', 'POST'])
-def admin_login():
+# Pastikan baris ini ada di PALING ATAS file auth.py
+from datetime import datetime
+
+@auth_bp.route('/login')
+def login():
+    """Halaman pemilihan login (Admin atau Guru)."""
     if current_user.is_authenticated:
         return _redirect_by_role(current_user)
+    
+    # TAMBAHKAN: now=datetime.now() 👇
+    return render_template('auth/choose_role.html', now=datetime.now())
 
     if request.method == 'POST':
         email    = request.form.get('email', '').strip()
