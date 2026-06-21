@@ -1,6 +1,7 @@
 from flask import Flask, redirect, url_for
 from flask_sqlalchemy import SQLAlchemy
 from flask_login import LoginManager
+from datetime import datetime
 import os
 
 db = SQLAlchemy()
@@ -27,9 +28,8 @@ def create_app():
 
     from app.routes import admin, auth, guru
     
-    # PASTIKAN 3 BARIS INI HANYA MUNCUL 1 KALI:
     app.register_blueprint(admin.admin_bp, url_prefix='/admin')
-    app.register_blueprint(auth.auth_bp)  # ← CUMA 1 KALI
+    app.register_blueprint(auth.auth_bp)
     app.register_blueprint(guru.guru_bp, url_prefix='/guru')
 
     @app.route('/')
