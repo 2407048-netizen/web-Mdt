@@ -1,10 +1,13 @@
-from flask import Blueprint, render_template, redirect, url_for, flash, request, session
+# app/routes/auth.py
+from flask import Blueprint, render_template, redirect, url_for, flash, request, session, jsonify
 from flask_login import login_user, logout_user, current_user
-from app.models import User, Subject
-from app.database import db
+from app import db  # Menggunakan db dari app/__init__.py
+from app.models import User, Subject, Classroom, PRAYER_SESSIONS, DAY_NAMES
 import json
+import time
 
-bp = Blueprint('auth', __name__)
+# PENTING: Nama variabel Blueprint WAJIB 'auth_bp'
+auth_bp = Blueprint('auth', __name__)
 
 # ─────────────────────────────────────────────
 #  HELPER
@@ -17,7 +20,7 @@ def _redirect_by_role(user):
 # ─────────────────────────────────────────────
 #  ROOT: Halaman Pilih Role
 # ─────────────────────────────────────────────
-@bp.route('/login')
+@auth_bp.route('/login')
 def login():
     """Halaman pemilihan login (Admin atau Guru)."""
     if current_user.is_authenticated:
@@ -27,7 +30,7 @@ def login():
 # ─────────────────────────────────────────────
 #  ADMIN LOGIN
 # ─────────────────────────────────────────────
-@bp.route('/admin/login', methods=['GET', 'POST'])
+@auth_bp.route('/admin/login', methods=['GET', 'POST'])
 def admin_login():
     if current_user.is_authenticated:
         return _redirect_by_role(current_user)
@@ -55,7 +58,7 @@ def admin_login():
 # ─────────────────────────────────────────────
 #  GURU LOGIN
 # ─────────────────────────────────────────────
-@bp.route('/guru/login', methods=['GET', 'POST'])
+@auth_bp.route('/guru/login', methods=['GET', 'POST'])
 def guru_login():
     if current_user.is_authenticated:
         return _redirect_by_role(current_user)
@@ -87,7 +90,7 @@ def guru_login():
 # ─────────────────────────────────────────────
 #  DAFTAR AKUN GURU BARU (REGISTER)
 # ─────────────────────────────────────────────
-@bp.route('/register', methods=['GET', 'POST'])
+@auth_bp.route('/register', methods=['GET', 'POST'])
 def register():
     if current_user.is_authenticated:
         return _redirect_by_role(current_user)
@@ -181,7 +184,6 @@ def register():
         return redirect(url_for('auth.guru_login'))
 
     # Untuk Halaman GET (Menampilkan Form)
-    from app.models import Classroom, PRAYER_SESSIONS, DAY_NAMES
     classrooms = Classroom.query.order_by(Classroom.level).all()
     
     session_classrooms = {s: [] for s in PRAYER_SESSIONS}
@@ -199,10 +201,8 @@ def register():
 # ─────────────────────────────────────────────
 #  OTP EMAIL VERIFICATION
 # ─────────────────────────────────────────────
-@bp.route('/send-otp', methods=['POST'])
+@auth_bp.route('/send-otp', methods=['POST'])
 def send_otp():
-    import time
-    from flask import jsonify
     from app.services.email_service import EmailService
 
     email = request.form.get('email', '').strip()
@@ -231,11 +231,8 @@ def send_otp():
         
     return jsonify(response_data)
 
-@bp.route('/verify-otp', methods=['POST'])
+@auth_bp.route('/verify-otp', methods=['POST'])
 def verify_otp():
-    import time
-    from flask import jsonify
-    
     email = request.form.get('email', '').strip()
     code = request.form.get('code', '').strip()
 
@@ -261,16 +258,14 @@ def verify_otp():
 # ─────────────────────────────────────────────
 #  RESET KATA SANDI (FORGOT PASSWORD)
 # ─────────────────────────────────────────────
-@bp.route('/forgot-password', methods=['GET', 'POST'])
+@auth_bp.route('/forgot-password', methods=['GET', 'POST'])
 def forgot_password():
     if current_user.is_authenticated:
         return _redirect_by_role(current_user)
     return render_template('auth/forgot_password.html')
 
-@bp.route('/forgot-password/send-otp', methods=['POST'])
+@auth_bp.route('/forgot-password/send-otp', methods=['POST'])
 def forgot_password_send_otp():
-    import time
-    from flask import jsonify
     from app.services.email_service import EmailService
 
     email = request.form.get('email', '').strip()
@@ -300,11 +295,8 @@ def forgot_password_send_otp():
         
     return jsonify(response_data)
 
-@bp.route('/forgot-password/verify-otp', methods=['POST'])
+@auth_bp.route('/forgot-password/verify-otp', methods=['POST'])
 def forgot_password_verify_otp():
-    import time
-    from flask import jsonify
-    
     email = request.form.get('email', '').strip()
     code = request.form.get('code', '').strip()
 
@@ -327,7 +319,7 @@ def forgot_password_verify_otp():
     session['reset_otp_verified'] = True
     return jsonify({'status': 'success', 'message': 'Email berhasil diverifikasi!'})
 
-@bp.route('/forgot-password/reset', methods=['POST'])
+@auth_bp.route('/forgot-password/reset', methods=['POST'])
 def forgot_password_reset():
     email = request.form.get('email', '').strip()
     password = request.form.get('password', '')
@@ -368,7 +360,7 @@ def forgot_password_reset():
 # ─────────────────────────────────────────────
 #  LOGOUT
 # ─────────────────────────────────────────────
-@bp.route('/logout')
+@auth_bp.route('/logout')
 def logout():
     role = current_user.role if current_user.is_authenticated else 'guru'
     logout_user()

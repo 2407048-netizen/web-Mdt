@@ -1,16 +1,21 @@
-from datetime import date
+# app/routes/guru.py
+from datetime import date, datetime
 from collections import OrderedDict
 from flask import Blueprint, render_template, redirect, url_for, flash, request, abort
 from flask_login import login_required, current_user
-from app.database import db
+from app import db  # Menggunakan db dari app/__init__.py
 from app.models import (Schedule, Classroom, ClassroomStudent, Student,
-                         Attendance, Exam, ExamScore, DAY_NAMES, PRAYER_SESSIONS)
+                         Attendance, Exam, ExamScore, DAY_NAMES, PRAYER_SESSIONS,
+                         SppPayment, CashFlow, User)
 from app.services.AttendanceService import AttendanceService
-from datetime import date, datetime
+import os
+import time
+import json
 
-bp = Blueprint('guru', __name__)
+# PENTING: Nama variabel Blueprint WAJIB 'guru_bp'
+guru_bp = Blueprint('guru', __name__)
 
-@bp.before_request
+@guru_bp.before_request
 @login_required
 def require_guru():
     if current_user.role not in ('guru', 'admin'):
@@ -18,8 +23,8 @@ def require_guru():
 
 # ─────────────────────────────────────────────
 #  DASHBOARD: Jadwal Mengajar Hari Ini
-# ─────────────────────────────────────────────
-@bp.route('/dashboard')
+# ────────────────────────────────────────────
+@guru_bp.route('/dashboard')
 def dashboard():
     today      = date.today()
     today_dow  = today.weekday()
@@ -38,7 +43,6 @@ def dashboard():
         schedule_status[sch.id] = count > 0
 
     # Hitung jumlah kelas per sesi dari SEMUA jadwal guru
-    from app.models import PRAYER_SESSIONS
     session_counts = {}
     for sesi in PRAYER_SESSIONS:
         session_counts[sesi] = (Schedule.query
@@ -57,7 +61,7 @@ def dashboard():
 # ─────────────────────────────────────────────
 #  JADWAL MENGAJAR LENGKAP
 # ─────────────────────────────────────────────
-@bp.route('/jadwal')
+@guru_bp.route('/jadwal')
 def jadwal():
     all_schedules = (Schedule.query
                      .filter_by(teacher_id=current_user.id, is_active=True)
@@ -77,7 +81,7 @@ def jadwal():
 # ─────────────────────────────────────────────
 #  REKAP ABSENSI PER JADWAL
 # ─────────────────────────────────────────────
-@bp.route('/rekap/<int:schedule_id>')
+@guru_bp.route('/rekap/<int:schedule_id>')
 def rekap_absensi(schedule_id):
     schedule = Schedule.query.get_or_404(schedule_id)
 
@@ -124,7 +128,7 @@ def rekap_absensi(schedule_id):
 # ─────────────────────────────────────────────
 #  ABSENSI MURID
 # ─────────────────────────────────────────────
-@bp.route('/attendance/<int:schedule_id>', methods=['GET', 'POST'])
+@guru_bp.route('/attendance/<int:schedule_id>', methods=['GET', 'POST'])
 def attendance(schedule_id):
     schedule = Schedule.query.get_or_404(schedule_id)
 
@@ -188,14 +192,14 @@ def attendance(schedule_id):
 # ─────────────────────────────────────────────
 #  MODUL PENDUKUNG
 # ─────────────────────────────────────────────
-@bp.route('/tawasulan', methods=['GET', 'POST'])
+@guru_bp.route('/tawasulan', methods=['GET', 'POST'])
 def tawasulan():
     if request.method == 'POST':
         flash("Data absensi Tawasulan berhasil disimpan!", 'success')
         return redirect(url_for('guru.tawasulan'))
     return render_template('guru/tawasulan.html')
 
-@bp.route('/mutabaah', methods=['GET', 'POST'])
+@guru_bp.route('/mutabaah', methods=['GET', 'POST'])
 def mutabaah():
     if request.method == 'POST':
         flash("Catatan hafalan santri berhasil ditambahkan!", 'success')
@@ -205,7 +209,7 @@ def mutabaah():
 # ─────────────────────────────────────────────
 #  ULANGAN MINGGUAN
 # ─────────────────────────────────────────────
-@bp.route('/exams')
+@guru_bp.route('/exams')
 def exams():
     my_schedules = Schedule.query.filter_by(
         teacher_id=current_user.id, is_active=True
@@ -220,7 +224,7 @@ def exams():
                            schedules=my_schedules,
                            day_names=DAY_NAMES)
 
-@bp.route('/exams/create', methods=['POST'])
+@guru_bp.route('/exams/create', methods=['POST'])
 def create_exam():
     title       = request.form.get('title', '').strip()
     schedule_id = request.form.get('schedule_id', type=int)
@@ -247,7 +251,7 @@ def create_exam():
     flash(f'Ulangan "{title}" berhasil dibuat!', 'success')
     return redirect(url_for('guru.exam_scores', exam_id=exam.id))
 
-@bp.route('/exams/<int:exam_id>', methods=['GET', 'POST'])
+@guru_bp.route('/exams/<int:exam_id>', methods=['GET', 'POST'])
 def exam_scores(exam_id):
     exam = Exam.query.get_or_404(exam_id)
     schedule = exam.schedule
@@ -293,9 +297,8 @@ def exam_scores(exam_id):
 # ─────────────────────────────────────────────
 #  PROFIL SAYA (EDIT PROFIL)
 # ─────────────────────────────────────────────
-@bp.route('/profile', methods=['GET', 'POST'])
+@guru_bp.route('/profile', methods=['GET', 'POST'])
 def profile():
-    from app.models import Classroom
     classrooms = Classroom.query.order_by(Classroom.level).all()
     
     session_classrooms = {s: [] for s in PRAYER_SESSIONS}
@@ -324,7 +327,6 @@ def profile():
                 if val:
                     subjects_dict[day_idx] = val
 
-        import json
         subject_book_json = json.dumps(subjects_dict) if subjects_dict else ""
 
         # Update fields
@@ -348,8 +350,6 @@ def profile():
                 flash('Format gambar tidak didukung (harus PNG, JPG, JPEG, atau GIF).', 'error')
                 return redirect(url_for('guru.profile'))
 
-            import os
-            import time
             from flask import current_app
 
             # Create upload directory if it doesn't exist
@@ -389,20 +389,17 @@ def profile():
 # ─────────────────────────────────────────────
 #  SUMBANGAN PEMBINAAN PENDIDIKAN (SPP)
 # ─────────────────────────────────────────────
-@bp.route('/spp', methods=['GET'])
+@guru_bp.route('/spp', methods=['GET'])
 def spp():
     if current_user.prayer_session != 'Magrib':
         abort(403)
         
-    from app.models import Classroom, ClassroomStudent, Student, SppPayment
-    
     # Ambil daftar kelas yang diampu guru (kelas utama & kelas terjadwal)
     my_classroom_ids = set()
     if current_user.classroom_id:
         my_classroom_ids.add(current_user.classroom_id)
     
     # Ambil kelas dari jadwal
-    from app.models import Schedule
     schedules = Schedule.query.filter_by(teacher_id=current_user.id, is_active=True).all()
     for s in schedules:
         my_classroom_ids.add(s.classroom_id)
@@ -458,12 +455,11 @@ def spp():
                            months_names=months_names,
                            years_range=years_range)
 
-@bp.route('/spp/pay', methods=['POST'])
+@guru_bp.route('/spp/pay', methods=['POST'])
 def spp_pay():
     if current_user.prayer_session != 'Magrib' and current_user.role != 'admin':
         abort(403)
         
-    from app.models import SppPayment
     student_id = request.form.get('student_id', type=int)
     month = request.form.get('month', type=int)
     year = request.form.get('year', type=int)
@@ -499,7 +495,6 @@ def spp_pay():
     db.session.add(payment)
     db.session.commit()
     
-    from app.models import Student
     std = Student.query.get(student_id)
     
     months_names = {
@@ -510,12 +505,11 @@ def spp_pay():
     flash(f'Pembayaran SPP {std.name} bulan {months_names.get(month)} berhasil disimpan!', 'success')
     return redirect(url_for(dest, classroom_id=request.form.get('classroom_id'), year=year))
 
-@bp.route('/spp/delete/<int:id>', methods=['POST'])
+@guru_bp.route('/spp/delete/<int:id>', methods=['POST'])
 def spp_delete(id):
     if current_user.prayer_session != 'Magrib' and current_user.role != 'admin':
         abort(403)
         
-    from app.models import SppPayment
     payment = SppPayment.query.get_or_404(id)
     
     redirect_to_admin = request.form.get('redirect_to_admin') == 'true'
